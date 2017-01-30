@@ -9,9 +9,6 @@ from xml.parsers.expat import ExpatError, ErrorString
 
 BUGZILLA_URL = "https://bugzilla.redhat.com/xmlrpc.cgi"
 
-# class BugFetchError(Exception):
-#     """Indicates an error occurred while fetching information about a bug."""
-
 
 class BZReader(object):
 
