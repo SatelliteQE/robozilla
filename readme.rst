@@ -4,7 +4,7 @@ Robottelo BZ Parse
 This a draft version
 
 simple output
-.. code-block:: console
+.. code-block:: bash
 
     ./parse.py /home/dlezz/projects/robottelo-fork/tests
     /home/dlezz/projects/robottelo_bz_parse
