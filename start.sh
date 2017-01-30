@@ -5,4 +5,4 @@ THIS_PATH=$(dirname "${SCRIPT}")
 
 cd ${THIS_PATH}
 
-./parse.py /home/dlezz/projects/robottelo-fork/tests/
+./parse.py /home/dlezz/projects/robottelo-fork/tests
