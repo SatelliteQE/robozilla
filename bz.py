@@ -30,7 +30,7 @@ class BZReader(object):
             self._connection = bz_conn
         return self._connection
 
-    def get_state(self, bug_id):
+    def get_bug_data(self, bug_id):
         bug_data = self._cache.get(bug_id, None)
         if not bug_data:
             bz_conn = self._get_connetion()

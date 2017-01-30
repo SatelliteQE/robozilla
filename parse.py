@@ -54,9 +54,9 @@ def main(source_path):
     for file_path in _get_files(source_path):
         for data in _parse_file(file_path):
             bug_id, bug_file_path, line_number, handler_name = data
-            bug_state = bz_reader.get_state(bug_id)
+            bug_data = bz_reader.get_bug_data(bug_id)
             bug_report_writer.write(
-                bug_id, bug_state, handler_name, bug_file_path, line_number)
+                bug_id, bug_data, handler_name, bug_file_path, line_number)
     bug_report_writer.finish()
 
 if __name__ == '__main__':
