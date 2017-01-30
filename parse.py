@@ -47,9 +47,12 @@ def _get_files(directory):
                 yield full_path
 
 
-def main(source_path):
-    bz_reader = _bz_reader()
-    bug_report_writer = BugReportWriter()
+def main(source_path, bz_reader=None, bug_report_writer=None):
+    if bz_reader is None:
+        bz_reader = _bz_reader()
+    if bug_report_writer is None:
+        bug_report_writer = _writer()
+
     bug_report_writer.start()
     for file_path in _get_files(source_path):
         for data in _parse_file(file_path):
