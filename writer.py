@@ -18,8 +18,8 @@ class BugReportWriter(object):
         else:
             bug_state_text = 'NONE'
 
-        print("found bz usage:", handler_name, bug_id, file_line_number,
-              file_path, bug_state_text)
+        print("found bz usage:", handler_name, bug_id, bug_state_text,
+              file_path, 'line:', file_line_number)
 
     def finish_writing(self):
         raise NotImplementedError

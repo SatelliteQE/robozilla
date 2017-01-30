@@ -33,12 +33,12 @@ class Base(object):
 
 class BZDecorator(Base):
     find_string = "@skip_if_bug_open("
-    re_pattern = "@skip_if_bug_open\( *\'bugzilla\' *, *([0-9]+) *\)"
+    re_pattern = "@skip_if_bug_open\( *\'bugzilla\' *, *([0-9]{7}) *\)"
 
 
 class BZIsOpen(Base):
     find_string = "bz_bug_is_open("
-    re_pattern = "bz_bug_is_open\( *([0-9]+) *\)"
+    re_pattern = "bz_bug_is_open\( *([0-9]{7}) *\)"
 
 
 
