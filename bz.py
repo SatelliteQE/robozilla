@@ -15,6 +15,8 @@ BUGZILLA_URL = "https://bugzilla.redhat.com/xmlrpc.cgi"
 
 class BZReader(object):
 
+    default_include_fields = ['id', 'status', 'resolution']
+
     def __init__(self):
         self._cache = {}
         self._connection = None
@@ -29,24 +31,25 @@ class BZReader(object):
         return self._connection
 
     def get_state(self, bug_id):
-        bug_state = self._cache.get(bug_id, None)
-        if not bug_state:
+        bug_data = self._cache.get(bug_id, None)
+        if not bug_data:
             bz_conn = self._get_connetion()
             try:
                 bug = bz_conn.getbug(
                     bug_id,
-                    include_fields=['id', 'status', 'resolution']
+                    include_fields=self.default_include_fields
                 )
-                bug_state = {
-                    'state': bug.status,
-                    'resolution': bug.resolution,
-                }
-                self._cache[bug_id] = bug_state
+                bug_data = {}
+                for field in self.default_include_fields:
+                    bug_data[field] = getattr(bug, field)
+
+                self._cache[bug_id] = bug_data
+
             except (ExpatError, ErrorString, Fault):
                 # to handle this
                 pass
 
-        return bug_state
+        return bug_data
 
     def bugs_status(self):
         return copy.deepcopy(self._cache)

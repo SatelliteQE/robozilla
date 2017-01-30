@@ -20,9 +20,10 @@ _file_pattern = '*.py'
 
 _handlers = [BZIsOpen, BZDecorator]
 _writer = BugReportWriter
+_bz_reader = BZReader
 
 
-def parse_file(file_path):
+def _parse_file(file_path):
     with open(file_path) as fr:
         line_number = 0
         for line in fr:
@@ -47,15 +48,16 @@ def _get_files(directory):
 
 
 def main(source_path):
-    bz_reader = BZReader()
+    bz_reader = _bz_reader()
     bug_report_writer = BugReportWriter()
+    bug_report_writer.start()
     for file_path in _get_files(source_path):
-        for data in parse_file(file_path):
+        for data in _parse_file(file_path):
             bug_id, bug_file_path, line_number, handler_name = data
             bug_state = bz_reader.get_state(bug_id)
             bug_report_writer.write(
                 bug_id, bug_state, handler_name, bug_file_path, line_number)
-
+    bug_report_writer.finish()
 
 if __name__ == '__main__':
     print(__file__)
