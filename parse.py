@@ -24,15 +24,15 @@ _writer = BugReportWriter
 
 def parse_file(file_path):
     with open(file_path) as fr:
-        index = 0
+        line_number = 0
         for line in fr:
             for handler in _handlers:
                 if handler.is_string_present(line):
                     bug_ids = handler.re_retrieve(line)
                     for bug_id in bug_ids:
-                        yield bug_id, file_path, index, handler.__name__
+                        yield bug_id, file_path, line_number, handler.__name__
 
-            index += 1
+            line_number += 1
 
 
 def _get_files(directory):
