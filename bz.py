@@ -21,7 +21,7 @@ class BZReader(object):
         self._cache = {}
         self._connection = None
 
-    def _get_connetion(self):
+    def _get_connection(self):
         # bz_credentials to be defined, for the moment connect as anonymous
         if not self._connection:
             bz_credentials = {}
@@ -33,7 +33,7 @@ class BZReader(object):
     def get_bug_data(self, bug_id):
         bug_data = self._cache.get(bug_id, None)
         if not bug_data:
-            bz_conn = self._get_connetion()
+            bz_conn = self._get_connection()
             try:
                 bug = bz_conn.getbug(
                     bug_id,
