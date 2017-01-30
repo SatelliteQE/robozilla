@@ -5,7 +5,7 @@ This a draft version
 
 simple output
 
-.. code-block:: bash
+.. code-block:: sh
 
     ./parse.py /home/dlezz/projects/robottelo-fork/tests
     /home/dlezz/projects/robottelo_bz_parse
