@@ -68,6 +68,7 @@ if __name__ == '__main__':
         scan_dir = sys.argv[1]
     else:
         print('please supply dir to scan')
+        print('usage: parse.py dir_to_parse_path')
         sys.exit(2)
 
     main(scan_dir)
