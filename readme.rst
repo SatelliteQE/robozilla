@@ -6,15 +6,15 @@ This is an early stage version
 Milestones:
 
     milestone 1:
-      * find buzilla ids work around usage in robottelo and analise their states
+      * find bugzilla ids work around usage in robottelo and analyze their states
       * make recommendation, and warn about critical and possible problems
-      * should be able to be used as a stand alone parser or as a lib
+      * should be able to be used as a standalone parser or as a lib
       * works related to doc, installer, unittests and TravisCI
 
     milestone 2:
       * integration with automation
-      * integrate with jenkins to be able to connect test skip/failures and bug ids in code
-      * warn about possible regression or bugs work around failure
+      * integrate with jenkins via API to be able to read test skip/failures and compare to bug ids in code
+      * warn about possible bugs fixture regression or bugs work around failure
 
 
 a very early stage sample output:
