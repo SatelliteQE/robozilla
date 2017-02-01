@@ -6,10 +6,11 @@ This is an early stage version
 Milestones:
 
     milestone 1:
-      * find bugzilla ids work around usage in robottelo code and analyze their states
-      * make recommendation, and warn about critical and possible problems
-      * should be able to be used as a standalone parser or as a lib
+      * parser optimization
       * works related to doc, installer, unittests and TravisCI
+      * find bugzilla ids work around usage in robottelo code and analyze their states
+      * make recommendation and warn about critical or possible problems
+      * should be able to be used as a standalone parser or as a library
 
     milestone 2:
       * integration with automation
