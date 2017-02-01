@@ -1,9 +1,22 @@
-Robottelo BZ Parse
-==================
+Robottelo Bugzilla Parser
+=========================
 
-This a draft version
+This is an early stage version
 
-simple output
+Milestones:
+
+    milestone 1:
+      * find buzilla ids work around usage in robottelo and analise their states
+      * make recommendation, and warn about critical and possible problems
+      * should be able to be used as a stand alone parser or as a lib
+      * works related to doc, installer, unittests and TravisCI
+
+    milestone 2:
+      * integrate with jenkins to be able to connect test skip/failures and bug ids in code
+      * warn about possible regression or bugzilla work around failure
+
+
+a very early stage sample output:
 
 .. code-block:: sh
 
