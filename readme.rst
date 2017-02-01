@@ -13,7 +13,7 @@ Milestones:
 
     milestone 2:
       * integration with automation
-      * integrate with jenkins via API to be able to read test skip/failures and compare to bug ids in code
+      * integrate with jenkins via API to be able to read test PASS/SKIP/FAIL and compare to bug ids in code
       * warn about possible bugs fixture regression or bugs work around failure
 
 
