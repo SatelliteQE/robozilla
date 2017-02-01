@@ -14,7 +14,7 @@ Milestones:
     milestone 2:
       * integration with automation
       * integrate with jenkins to be able to connect test skip/failures and bug ids in code
-      * warn about possible regression or bugzilla work around failure
+      * warn about possible regression or bugs work around failure
 
 
 a very early stage sample output:
