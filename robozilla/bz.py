@@ -1,5 +1,6 @@
 
 import copy
+import fnmatch
 import os
 
 import bugzilla
@@ -19,7 +20,8 @@ class BZReader(object):
 
     include_fields = ['id', 'status', 'whiteboard', 'resolution', 'flags']
     _flags_fields = ('name', 'status')
-    _exclude_flags = []
+    _flags_force_include = []
+    _flags_key_filters = ['sat-*']
 
     def __init__(self, credentials=None):
         if credentials is None:
@@ -33,6 +35,7 @@ class BZReader(object):
                     BUGZILLA_ENVIRON_USER_PASSWORD_NAME]
 
         self.credentials = credentials
+        self.credentials = {}
         self._cache = {}
         self._connection = None
 
@@ -55,15 +58,21 @@ class BZReader(object):
                 )
                 bug_data = {}
                 for field in self.include_fields:
-                    if field == 'flags':
+                    if field == 'flags' and self._flags_fields:
                         flags_data = {}
                         flags = getattr(bug, field, [])
                         for flag_entry in flags:
                             key_name, value_name = self._flags_fields
                             key = flag_entry.get(key_name, '')
+                            value = flag_entry.get(value_name, '')
                             if key:
-                                flags_data[key] = flag_entry.get(
-                                    value_name, '')
+                                if self._flags_key_filters:
+                                    for key_filter in self._flags_key_filters:
+                                        if fnmatch.fnmatch(key, key_filter):
+                                            flags_data[key] = value
+                                            break
+                                else:
+                                    flags_data[key] = value
 
                         bug_data[field] = flags_data
                     else:
