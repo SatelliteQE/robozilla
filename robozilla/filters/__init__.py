@@ -1,2 +1,2 @@
-from .decorator import BZDecorator
-from.isopen import BZIsOpen
+from robozilla.filters.decorator import BZDecorator
+from robozilla.filters.isopen import BZIsOpen
