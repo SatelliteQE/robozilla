@@ -1,8 +1,8 @@
-from __future__ import print_function
 import re
 
 
 class Base(object):
+    name = 'generic'
     find_string = None
     # default pattern
     re_pattern = "[0-9]{7}"
@@ -24,19 +24,12 @@ class Base(object):
         return cls._re_compiled
 
     @classmethod
-    def re_retrieve(cls, text):
+    def retrieve(cls, text):
         bug_ids = []
+        if cls.find_string and not cls.is_string_present(text):
+            return bug_ids
+
         if cls.re_pattern:
             bug_ids = cls._get_compiled_re().findall(text)
+
         return bug_ids
-
-
-class BZDecorator(Base):
-    find_string = "@skip_if_bug_open("
-    re_pattern = ("@skip_if_bug_open\( *(?:\'bugzilla\'|\"bugzilla\")"
-                  " *, *([0-9]{7}) *\)")
-
-
-class BZIsOpen(Base):
-    find_string = "bz_bug_is_open("
-    re_pattern = "bz_bug_is_open\( *([0-9]{7}) *\)"

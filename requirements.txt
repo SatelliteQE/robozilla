@@ -1,0 +1,3 @@
+
+python_bugzilla==1.2.2
+six==1.10.0
