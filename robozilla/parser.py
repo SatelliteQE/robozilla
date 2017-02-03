@@ -9,7 +9,7 @@ from robozilla.reporters import RawReporter
 class Parser(object):
 
     def __init__(self, files_provider, filters=None, reporter=None,
-                 bz_reader=None, enviroment=None):
+                 bz_reader=None, environment=None):
 
         if isinstance(files_provider, six.string_types):
                 files_provider = FilesProvider(files_provider)
@@ -18,7 +18,7 @@ class Parser(object):
         self.filters = filters if filters else [BZDecorator, BZIsOpen]
         self.bz_reader = bz_reader if bz_reader else BZReader()
         self.reporter = reporter if reporter else (
-            RawReporter(bz_reader=bz_reader, environment=enviroment))
+            RawReporter(bz_reader=bz_reader, environment=environment))
 
     def _parse_file(self, file_path):
         with open(file_path) as fr:

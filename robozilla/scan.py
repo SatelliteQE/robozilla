@@ -19,7 +19,7 @@ def main():
         filters=None,
         reporter=None,
         bz_reader=None,
-        enviroment=None
+        environment=None
     )
     parser.parse()
 

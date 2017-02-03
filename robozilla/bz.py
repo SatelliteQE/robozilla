@@ -18,7 +18,8 @@ from robozilla.constants import (
 
 class BZReader(object):
 
-    include_fields = ['id', 'status', 'whiteboard', 'resolution', 'flags']
+    include_fields = ['id', 'status', 'whiteboard', 'resolution', 'flags',
+                      'dupe_of']
     _flags_fields = ('name', 'status')
     _flags_force_include = []
     _flags_key_filters = ['sat-*']
@@ -48,15 +49,15 @@ class BZReader(object):
         return self._connection
 
     def get_bug_data(self, bug_id):
-        bug_data = self._cache.get(bug_id, None)
+        bug_data = self._cache.get(bug_id)
         if not bug_data:
             bz_conn = self._get_connection()
             try:
                 bug = bz_conn.getbug(
                     bug_id,
-                    # include_fields=self.include_fields
+                    include_fields=self.include_fields
                 )
-                bug_data = {}
+                bug_data = {'id': bug_id}
                 for field in self.include_fields:
                     if field == 'flags' and self._flags_fields:
                         flags_data = {}
@@ -76,7 +77,21 @@ class BZReader(object):
 
                         bug_data[field] = flags_data
                     else:
-                        bug_data[field] = getattr(bug, field)
+                        bug_data[field] = getattr(bug, field, None)
+
+                if bug.resolution:
+                    bug_data['status_resolution'] = '{0}_{1}'.format(
+                        bug.status,
+                        bug.resolution
+                    )
+                else:
+                    bug_data['status_resolution'] = bug.status
+
+                if bug_data['dupe_of']:
+                    bug_data['duplicate_of'] = self.get_bug_data(
+                        bug_data['dupe_of'])
+                else:
+                    bug_data['duplicate_of'] = None
 
                 self._cache[bug_id] = bug_data
 

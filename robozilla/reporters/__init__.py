@@ -1,1 +1,1 @@
-from robozilla.reporters.base import RawReporter
+from robozilla.reporters.base import RawReporter  # noqa

@@ -41,8 +41,20 @@ class RawReporter(object):
 
         return parse_time
 
-    def _left_just_string(self, text, number):
+    @staticmethod
+    def _left_just_string(text, number):
         return text.ljust(number)
+
+    @staticmethod
+    def _get_flags_string(flags):
+        if not flags:
+            flags = {}
+        return ', '.join(
+            ['{0}{1}'.format(key, value) for key, value in flags.items()]
+        )
+
+    def output(self, *args):
+        print(*args)
 
     def write(self, bug_id, bug_data, handler_name, file_path,
               file_line_number):
@@ -56,13 +68,30 @@ class RawReporter(object):
         else:
             bug_state_text = 'NONE'
 
-        print('{0} | {1} | {2} | {3} | {4}'.format(
+        self.output('{0} | {1} | {2} | {3} | {4} -> {5}'.format(
             self._left_just_string(handler_name, 17),
             self._left_just_string(str(bug_id), 10),
             self._left_just_string(bug_state_text, 22),
-            self._left_just_string(str(file_line_number), 5),
+            self._left_just_string(
+                self._get_flags_string(bug_data.get('flags', '')), 22),
+            str(file_line_number),
             file_path
-        ), bug_data.get('flags', ''))
+        ))
+
+        duplicate_of_data = bug_data['duplicate_of']
+        ind = 4
+        while duplicate_of_data is not None:
+            tab_str = ' '*ind
+            self.output('{0} DUPLICATE OF:'.format(tab_str))
+            self.output('{0} - {1} - {2} - {3}'.format(
+                tab_str,
+                self._left_just_string(str(duplicate_of_data['id']), 10),
+                self._left_just_string(duplicate_of_data['status_resolution'],
+                                       22),
+                self._get_flags_string(duplicate_of_data.get('flags', '')))
+            )
+            duplicate_of_data = duplicate_of_data['duplicate_of']
+            ind *= 2
 
     def stop(self, success=True):
         self._started = False
