@@ -78,7 +78,7 @@ class RawReporter(object):
             file_path
         ))
 
-        duplicate_of_data = bug_data['duplicate_of']
+        duplicate_of_data = bug_data.get('duplicate_of')
         ind = 4
         while duplicate_of_data is not None:
             tab_str = ' '*ind
@@ -92,6 +92,16 @@ class RawReporter(object):
             )
             duplicate_of_data = duplicate_of_data['duplicate_of']
             ind *= 2
+
+    def write_header(self):
+        self.output('{0} | {1} | {2} | {3} | {4} -> {5}'.format(
+            self._left_just_string('Handler', 17),
+            self._left_just_string('BZ', 10),
+            self._left_just_string('State', 22),
+            self._left_just_string('Flags', 22),
+            'Line',
+            'File'
+        ))
 
     def stop(self, success=True):
         self._started = False

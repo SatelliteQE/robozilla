@@ -21,7 +21,7 @@ def main():
         bz_reader=None,
         environment=None
     )
-    parser.parse()
+    parser.parse(report=True)
 
 
 if __name__ == '__main__':

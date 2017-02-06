@@ -18,8 +18,14 @@ from robozilla.constants import (
 
 class BZReader(object):
 
-    include_fields = ['id', 'status', 'whiteboard', 'resolution', 'flags',
-                      'dupe_of']
+    include_fields = [
+        'id',
+        'status',
+        'whiteboard',
+        'resolution',
+        'flags',
+        'dupe_of',
+    ]
     _flags_fields = ('name', 'status')
     _flags_force_include = []
     _flags_key_filters = ['sat-*']
@@ -48,7 +54,21 @@ class BZReader(object):
             self._connection = bz_conn
         return self._connection
 
+    def get_bug_data_in_bulk(self, bugs):
+        bz_conn = self._get_connection()
+        include_fields = [
+            field for field in self.include_fields
+            if field not in ['dupe_of']
+        ]
+        result = bz_conn.getbugs(bugs, include_fields=include_fields)
+        chunk_data = {}
+        for data in result:
+            bug_data = self.set_bug_data_fields(data)
+            chunk_data[bug_data['id']] = bug_data
+        return chunk_data
+
     def get_bug_data(self, bug_id):
+        print "getting single BZ"
         bug_data = self._cache.get(bug_id)
         if not bug_data:
             bz_conn = self._get_connection()
@@ -57,48 +77,54 @@ class BZReader(object):
                     bug_id,
                     include_fields=self.include_fields
                 )
-                bug_data = {'id': bug_id}
-                for field in self.include_fields:
-                    if field == 'flags' and self._flags_fields:
-                        flags_data = {}
-                        flags = getattr(bug, field, [])
-                        for flag_entry in flags:
-                            key_name, value_name = self._flags_fields
-                            key = flag_entry.get(key_name, '')
-                            value = flag_entry.get(value_name, '')
-                            if key:
-                                if self._flags_key_filters:
-                                    for key_filter in self._flags_key_filters:
-                                        if fnmatch.fnmatch(key, key_filter):
-                                            flags_data[key] = value
-                                            break
-                                else:
-                                    flags_data[key] = value
-
-                        bug_data[field] = flags_data
-                    else:
-                        bug_data[field] = getattr(bug, field, None)
-
-                if bug.resolution:
-                    bug_data['status_resolution'] = '{0}_{1}'.format(
-                        bug.status,
-                        bug.resolution
-                    )
-                else:
-                    bug_data['status_resolution'] = bug.status
-
-                if bug_data['dupe_of']:
-                    bug_data['duplicate_of'] = self.get_bug_data(
-                        bug_data['dupe_of'])
-                else:
-                    bug_data['duplicate_of'] = None
-
-                self._cache[bug_id] = bug_data
+                bug_data = self.set_bug_data_fields(bug)
 
             except (ExpatError, ErrorString, Fault):
                 # to handle this
                 pass
 
+        return bug_data
+
+    def set_bug_data_fields(self, bug):
+        print "Formatting bz", bug.id
+        bug_data = {}
+        for field in self.include_fields:
+            if field == 'flags' and self._flags_fields:
+                flags_data = {}
+                flags = getattr(bug, field, [])
+                for flag_entry in flags:
+                    key_name, value_name = self._flags_fields
+                    key = flag_entry.get(key_name, '')
+                    value = flag_entry.get(value_name, '')
+                    if key:
+                        if self._flags_key_filters:
+                            for key_filter in self._flags_key_filters:
+                                if fnmatch.fnmatch(key, key_filter):
+                                    flags_data[key] = value
+                                    break
+                        else:
+                            flags_data[key] = value
+
+                bug_data[field] = flags_data
+            else:
+                bug_data[field] = getattr(bug, field, None)
+
+        if bug.resolution:
+            bug_data['status_resolution'] = '{0}_{1}'.format(
+                bug.status,
+                bug.resolution
+            )
+        else:
+            bug_data['status_resolution'] = bug.status
+
+        if bug_data['dupe_of']:
+            bug_data['duplicate_of'] = self.get_bug_data(
+                bug_data['dupe_of'])
+        else:
+            bug_data['duplicate_of'] = None
+
+        bug_data['id'] = str(bug.id)
+        self._cache[bug_data['id']] = bug_data
         return bug_data
 
     def bugs_status(self):
