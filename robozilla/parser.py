@@ -50,10 +50,12 @@ class Parser(object):
             files_data = {}
             self.reporter.start()
 
+        occurrences_counter = 0
         bug_objects = {}
         for file_path in self.files_provider.get_files():
             for data in self._parse_file(file_path):
                 bug_id, bug_file_path, line_number, handler_name = data
+                occurrences_counter += 1
                 bug_file_data = {
                     'file_path': bug_file_path,
                     'line_number': line_number,
@@ -84,8 +86,13 @@ class Parser(object):
         if report:
             raw_parse_time = round(time.time() - self.reporter.start_time, 2)
             self.reporter.output_status(
-                'found {0} bugs usage in {1} files in {2} seconds'.format(
-                    len(bug_objects), len(bug_files_path), raw_parse_time)
+                'found {0} bugs usage in {1} files (occurrences {2})'
+                ' in {3} seconds'.format(
+                    len(bug_objects),
+                    len(bug_files_path),
+                    occurrences_counter,
+                    raw_parse_time
+                )
             )
         if bulk:
             if report:
