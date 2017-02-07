@@ -84,7 +84,7 @@ class Parser(object):
         if report:
             raw_parse_time = round(time.time() - self.reporter.start_time, 2)
             self.reporter.output_status(
-                'found {0} bugs in {1} files in {2} seconds'.format(
+                'found {0} bugs usage in {1} files in {2} seconds'.format(
                     len(bug_objects), len(bug_files_path), raw_parse_time)
             )
         if bulk:
