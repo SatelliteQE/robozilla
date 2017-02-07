@@ -31,6 +31,10 @@ class RawReporter(object):
         return False
 
     @property
+    def start_time(self):
+        return self._start_time
+
+    @property
     def parse_time(self):
         if self.finished:
             parse_time = self._end_time - self._start_time
@@ -52,6 +56,9 @@ class RawReporter(object):
         return ', '.join(
             ['{0}{1}'.format(key, value) for key, value in flags.items()]
         )
+
+    def output_status(self, *args):
+        print(*args)
 
     def output(self, *args):
         print(*args)

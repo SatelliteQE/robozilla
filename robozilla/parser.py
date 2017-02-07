@@ -1,3 +1,6 @@
+
+import time
+
 import six
 
 from robozilla.bz import BZReader
@@ -43,36 +46,71 @@ class Parser(object):
 
     def parse(self, report=False, bulk=True, chunk_size=150):
         if report:
+            bug_files_path = []
+            files_data = {}
             self.reporter.start()
 
         bug_objects = {}
         for file_path in self.files_provider.get_files():
             for data in self._parse_file(file_path):
                 bug_id, bug_file_path, line_number, handler_name = data
-                bug_objects[bug_id] = {
-                    'bug_id': bug_id,
-                    'bug_file_path': bug_file_path,
+                bug_file_data = {
+                    'file_path': bug_file_path,
                     'line_number': line_number,
                     'handler_name': handler_name
                 }
+                if bug_id in bug_objects:
+                    bug_objects[bug_id]['files_data'].append(bug_file_data)
+                else:
+                    bug_objects[bug_id] = {
+                        'bug_id': bug_id,
+                        'files_data': [bug_file_data]
+                    }
 
+                if report:
+                    if bug_file_path not in bug_files_path:
+                        bug_files_path.append(bug_file_path)
+
+                    file_bug_data = {
+                        'bug_id': bug_id,
+                        'line_number': line_number,
+                        'handler_name': handler_name
+                    }
+                    if bug_file_path in files_data:
+                        files_data[bug_file_path].append(file_bug_data)
+                    else:
+                        files_data[bug_file_path] = [file_bug_data]
+
+        if report:
+            raw_parse_time = round(time.time() - self.reporter.start_time, 2)
+            self.reporter.output_status(
+                'found {0} bugs in {1} files in {2} seconds'.format(
+                    len(bug_objects), len(bug_files_path), raw_parse_time)
+            )
         if bulk:
+            if report:
+                self.reporter.output_status('getting bugs info ...')
+
             for chunk_ids in chunks(list(bug_objects.keys()), chunk_size):
                 chunk_data = self.bz_reader.get_bug_data_in_bulk(chunk_ids)
                 for bug_id, bug_data in chunk_data.items():
                     bug_objects[bug_id]['bug_data'] = bug_data
 
         if report:
-            self.reporter.output('{} bugs found'.format(len(bug_objects)))
+            self.reporter.output_status('generating report ...')
             self.reporter.write_header()
-            for bug_id, data in bug_objects.items():
-                self.reporter.write(
-                    bug_id,
-                    data.get('bug_data', self.bz_reader.get_bug_data(bug_id)),
-                    data['handler_name'],
-                    data['bug_file_path'],
-                    data['line_number']
-                )
+            for file_path in bug_files_path:
+                for file_bug_data in files_data[file_path]:
+                    bug_id = file_bug_data['bug_id']
+                    data = bug_objects[bug_id]
+                    self.reporter.write(
+                        bug_id,
+                        data.get('bug_data',
+                                 self.bz_reader.get_bug_data(bug_id)),
+                        file_bug_data['handler_name'],
+                        file_path,
+                        file_bug_data['line_number']
+                    )
             self.reporter.stop()
 
         return bug_objects
