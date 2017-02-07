@@ -1,21 +1,23 @@
 
-from unittest import TestCase
-
 from robozilla.parser import Parser
 
 import base
+import data
 
 
-class ParserTestCase(TestCase):
+def test_parse_simple():
+    bugs_set = {'1123360', '1405428', '1402826', '1328925', '1333805',
+                '1219610'}
 
-    def test_parse_simple(self):
+    bz_reader = base.BZReaderForTest()
+    bz_reader.set_cache(data.cache_data)
+    parser = Parser(base.files_path, bz_reader=bz_reader)
 
-        parser = Parser(base.files_path)
-        bugs_data = parser.get_bugs_status()
-        parser.parse(report=False)
+    bugs_data = parser.get_bugs_status()
 
-        self.assertEqual(base.bugs_set, set(bugs_data.keys()))
+    assert bugs_set == set(bugs_data.keys())
 
 
-
+if __name__ == '__main__':
+    test_parse_simple()
 
