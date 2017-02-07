@@ -2,6 +2,7 @@ import os
 import sys
 
 from robozilla.parser import Parser
+from robozilla.constants import DEFAULT_INCLUDE_FIELDS
 
 
 def main():
@@ -19,7 +20,11 @@ def main():
         filters=None,
         reporter=None,
         bz_reader=None,
-        environment=None
+        environment=None,
+        reader_options={
+            'follow_duplicates': True,
+            'include_fields': DEFAULT_INCLUDE_FIELDS + ['dupe_of']
+        }
     )
     parser.parse(report=True)
 

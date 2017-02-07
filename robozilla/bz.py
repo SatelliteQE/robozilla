@@ -12,25 +12,23 @@ from xml.parsers.expat import ExpatError, ErrorString
 from robozilla.constants import (
     BUGZILLA_ENVIRON_USER_NAME,
     BUGZILLA_ENVIRON_USER_PASSWORD_NAME,
-    BUGZILLA_URL
+    BUGZILLA_URL,
+    DEFAULT_INCLUDE_FIELDS
 )
 
 
 class BZReader(object):
 
-    include_fields = [
-        'id',
-        'status',
-        'whiteboard',
-        'resolution',
-        'flags',
-        'dupe_of',
-    ]
     _flags_fields = ('name', 'status')
     _flags_force_include = []
     _flags_key_filters = ['sat-*']
 
-    def __init__(self, credentials=None):
+    def __init__(self,
+                 credentials=None,
+                 include_fields=None,
+                 follow_duplicates=False,
+                 follow_clones=False):
+
         if credentials is None:
             credentials = {}
             if BUGZILLA_ENVIRON_USER_NAME in os.environ:
@@ -41,10 +39,13 @@ class BZReader(object):
                 credentials['password'] = os.environ[
                     BUGZILLA_ENVIRON_USER_PASSWORD_NAME]
 
-        self.credentials = credentials
-        self.credentials = {}
+        self.credentials = credentials or {}
         self._cache = {}
         self._connection = None
+
+        self.include_fields = include_fields or DEFAULT_INCLUDE_FIELDS
+        self.follow_duplicates = follow_duplicates
+        self.follow_clones = follow_clones
 
     def _get_connection(self):
         # bz_credentials to be defined, for the moment connect as anonymous
@@ -55,6 +56,8 @@ class BZReader(object):
         return self._connection
 
     def get_bug_data_in_bulk(self, bugs):
+        """Get bug_data in bulk by given chunk in bugs
+        bugs: a list of ids"""
         bz_conn = self._get_connection()
         include_fields = [
             field for field in self.include_fields
@@ -68,7 +71,7 @@ class BZReader(object):
         return chunk_data
 
     def get_bug_data(self, bug_id):
-        print "getting single BZ"
+        """Get data for a single bug_id"""
         bug_data = self._cache.get(bug_id)
         if not bug_data:
             bz_conn = self._get_connection()
@@ -86,7 +89,10 @@ class BZReader(object):
         return bug_data
 
     def set_bug_data_fields(self, bug):
-        print "Formatting bz", bug.id
+        """Get a bug object and returns a dict
+        containing included_fields and flags and also
+        add extra fields getting relations as dupes or
+        clones"""
         bug_data = {}
         for field in self.include_fields:
             if field == 'flags' and self._flags_fields:
@@ -117,11 +123,17 @@ class BZReader(object):
         else:
             bug_data['status_resolution'] = bug.status
 
-        if bug_data['dupe_of']:
-            bug_data['duplicate_of'] = self.get_bug_data(
-                bug_data['dupe_of'])
-        else:
-            bug_data['duplicate_of'] = None
+        # getting dupes are expensive and makes the elapsed time to be
+        # 20x slow  so it is by default disabled
+        if 'dupe_of' in self.include_fields and self.follow_duplicates:
+            if bug_data['dupe_of']:
+                bug_data['duplicate_of'] = self.get_bug_data(
+                    bug_data['dupe_of'])
+            else:
+                bug_data['duplicate_of'] = None
+
+        if self.follow_clones:
+            pass  # TODO: Implement this!!!
 
         bug_data['id'] = str(bug.id)
         self._cache[bug_data['id']] = bug_data
