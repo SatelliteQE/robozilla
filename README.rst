@@ -3,6 +3,31 @@ Robottelo Bugzilla Parser
 
 This is an early stage version
 
+Install:
+________
+
+To install the latest release version::
+
+    pip install robozilla
+
+
+to install from github master branch::
+
+    pip install https://github.com/ldjebran/robozilla/tarball/master
+
+
+Basic usage:
+____________
+
+Go to robottelo folder to scan and launch the command::
+
+    robozilla
+
+or type::
+
+    robozilla path_to_scan
+
+
 Milestones:
 
     milestone 1:
@@ -22,8 +47,8 @@ a very early stage sample output:
 
 .. code-block:: sh
 
-    dlezz@elysion:~/projects/robottelo-fork$ robozilla
-    /home/dlezz/projects/robottelo-fork
+    user:~/projects/robottelo-fork$ robozilla
+    /home/user/projects/robottelo-fork
     bz_bug_is_open    | 1252101    | CLOSED_WONTFIX         | sat-backlog?           | 35 -> ../robottelo-fork/robottelo/api/utils.py
     bz_bug_is_open    | 1328202    | CLOSED_ERRATA          | sat-6.2.0+             | 47 -> ../robottelo-fork/robottelo/cli/contenthost.py
     bz_bug_is_open    | 1332650    | NEW                    | sat-backlog+           | 585 -> ../robottelo-fork/robottelo/cli/factory.py
