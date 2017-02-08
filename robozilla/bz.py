@@ -13,7 +13,10 @@ from robozilla.constants import (
     BUGZILLA_ENVIRON_USER_NAME,
     BUGZILLA_ENVIRON_USER_PASSWORD_NAME,
     BUGZILLA_URL,
-    DEFAULT_INCLUDE_FIELDS
+    DEFAULT_INCLUDE_FIELDS,
+    DUPLICATES_FIELD,
+    CLONES_FIELD,
+    DEPENDENT_FIELD
 )
 
 
@@ -27,7 +30,9 @@ class BZReader(object):
                  credentials=None,
                  include_fields=None,
                  follow_duplicates=False,
-                 follow_clones=False):
+                 follow_clones=False,
+                 follow_depends=True
+                 ):
 
         if credentials is None:
             credentials = {}
@@ -46,6 +51,7 @@ class BZReader(object):
         self.include_fields = include_fields or DEFAULT_INCLUDE_FIELDS
         self.follow_duplicates = follow_duplicates
         self.follow_clones = follow_clones
+        self.follow_depends = follow_depends
 
     def _get_connection(self):
         # bz_credentials to be defined, for the moment connect as anonymous
@@ -123,17 +129,33 @@ class BZReader(object):
         else:
             bug_data['status_resolution'] = bug.status
 
-        # getting dupes are expensive and makes the elapsed time to be
-        # 20x slow  so it is by default disabled
-        if 'dupe_of' in self.include_fields and self.follow_duplicates:
-            if bug_data['dupe_of']:
+        # getting dupes and clones are expensive and makes the elapsed time
+        # to be 20x slow so they are by default disabled
+        if (DUPLICATES_FIELD in self.include_fields and
+                self.follow_duplicates):
+            if bug_data[DUPLICATES_FIELD]:
                 bug_data['duplicate_of'] = self.get_bug_data(
-                    bug_data['dupe_of'])
+                    bug_data[DUPLICATES_FIELD])
             else:
                 bug_data['duplicate_of'] = None
 
-        if self.follow_clones:
-            pass  # TODO: Implement this!!!
+        if (CLONES_FIELD in self.include_fields and
+                self.follow_clones):
+            if bug_data[CLONES_FIELD]:
+                bug_data['clone_of'] = self.get_bug_data(
+                    bug_data[CLONES_FIELD])
+            else:
+                bug_data['clone_of'] = None
+
+        if (DEPENDENT_FIELD in self.include_fields and
+                self.follow_depends):
+            if bug_data[DEPENDENT_FIELD]:
+                bug_data['dependent_on'] = []
+                for depend_on in bug_data[DEPENDENT_FIELD]:
+                    bug_data['dependent_on'].append(
+                        self.get_bug_data(depend_on))
+            else:
+                bug_data['dependent_on'] = None
 
         bug_data['id'] = str(bug.id)
         self._cache[bug_data['id']] = bug_data

@@ -15,6 +15,7 @@ with open('README.rst') as readme_file:
 entry_points = {'console_scripts': ['robozilla=robozilla.scan:main']}
 
 requirements = [
+    'Click>=6.0',
     'python_bugzilla==1.2.2',
     'six'
 ]
@@ -23,7 +24,7 @@ test_requirements = []
 
 setup(
     name='robozilla',
-    version='0.1.2',
+    version='0.1.3',
     packages=packages,
     url='https://github.com/ldjebran/robozilla',
     license='GNU General Public License v3 (GPLv3)',

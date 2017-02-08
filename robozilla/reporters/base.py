@@ -57,11 +57,30 @@ class RawReporter(object):
             ['{0}{1}'.format(key, value) for key, value in flags.items()]
         )
 
+    def output_warn(self, *args):
+        print(*args)
+
     def output_status(self, *args):
         print(*args)
 
     def output(self, *args):
         print(*args)
+
+    def output_recursive(self, bug_data, field_name, title):
+        field_data = bug_data.get(field_name)
+        ind = 4
+        while field_data is not None:
+            tab_str = ' ' * ind
+            self.output('{0} {1}:'.format(tab_str, title))
+            self.output('{0} - {1} - {2} - {3}'.format(
+                tab_str,
+                self._left_just_string(str(field_data['id']), 10),
+                self._left_just_string(field_data['status_resolution'],
+                                       22),
+                self._get_flags_string(field_data.get('flags', '')))
+            )
+            field_data = field_data.get(field_name)
+            ind *= 2
 
     def write(self, bug_id, bug_data, handler_name, file_path,
               file_line_number):
@@ -85,20 +104,20 @@ class RawReporter(object):
             file_path
         ))
 
-        duplicate_of_data = bug_data.get('duplicate_of')
-        ind = 4
-        while duplicate_of_data is not None:
-            tab_str = ' '*ind
-            self.output('{0} DUPLICATE OF:'.format(tab_str))
-            self.output('{0} - {1} - {2} - {3}'.format(
-                tab_str,
-                self._left_just_string(str(duplicate_of_data['id']), 10),
-                self._left_just_string(duplicate_of_data['status_resolution'],
-                                       22),
-                self._get_flags_string(duplicate_of_data.get('flags', '')))
-            )
-            duplicate_of_data = duplicate_of_data['duplicate_of']
-            ind *= 2
+        self.output_recursive(bug_data, 'duplicate_of', 'DUPLICATE OF')
+        self.output_recursive(bug_data, 'clone_of', 'CLONE OF')
+        dependent_on = bug_data.get('dependent_on', None)
+        if dependent_on:
+            tab_str = ' ' * 4
+            self.output('{0} {1}:'.format(tab_str, 'DEPEND ON'))
+            for depend_on in dependent_on:
+                self.output('{0} - {1} - {2} - {3}'.format(
+                    tab_str,
+                    self._left_just_string(str(depend_on['id']), 10),
+                    self._left_just_string(depend_on['status_resolution'],
+                                           22),
+                    self._get_flags_string(depend_on.get('flags', '')))
+                )
 
     def write_header(self):
         self.output('{0} | {1} | {2} | {3} | {4} -> {5}'.format(

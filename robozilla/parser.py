@@ -17,7 +17,7 @@ def chunks(l, n):
 
 class Parser(object):
 
-    def __init__(self, files_provider, filters=None, reporter=None,
+    def __init__(self, files_provider, filters=None, reporter=None, warn=True,
                  bz_reader=None, environment=None, reader_options=None):
 
         if isinstance(files_provider, six.string_types):
@@ -31,6 +31,7 @@ class Parser(object):
         self.reporter = reporter or RawReporter(
             bz_reader=bz_reader, environment=environment
         )
+        self.warn = warn
 
     def _parse_file(self, file_path):
         with open(file_path) as fr:
@@ -38,6 +39,17 @@ class Parser(object):
             for line in fr:
                 for filter_handler in self.filters:
                     bug_ids = filter_handler.retrieve(line)
+                    if (not bug_ids and self.warn and
+                            filter_handler.is_string_present(line)):
+                        self.reporter.output_warn(
+                            'WARNING: {0} handler string found, but no bug id'
+                            ' retrieved'.format(filter_handler.name))
+                        self.reporter.output_warn(
+                            '   line : {0} file: {1}'.format(
+                                line_number, file_path))
+                        self.reporter.output_warn(
+                            '   line content: {}'.format(line.strip()))
+
                     for bug_id in bug_ids:
                         yield (bug_id, file_path, line_number,
                                filter_handler.name)

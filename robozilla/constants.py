@@ -11,7 +11,15 @@ DEFAULT_INCLUDE_FIELDS = [
     'whiteboard',
     'resolution',
     'flags',
-    # getting dupe_of field makes request very slow
-    # add this field explicitly and also follow_duplicates=True
+    # getting dupe_of, cf_clone_of and depends_on fields
+    # makes request very slow
+    # add this fields explicitly and also follow_duplicates=True
+    # follow_clones=True
     # 'dupe_of',
+    # 'cf_clone_of',
+    # 'depends_on',
 ]
+
+DUPLICATES_FIELD = 'dupe_of'
+CLONES_FIELD = 'cf_clone_of'
+DEPENDENT_FIELD = 'depends_on'

@@ -20,4 +20,3 @@ def skip_if_bug_open(bug_type, bug_id):
 def bz_bug_is_open(bug_id):
     """simple decorator to imitate the robottelo function"""
     return False
-
