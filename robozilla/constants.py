@@ -1,7 +1,8 @@
 
 BUGZILLA_ENVIRON_USER_NAME = 'BUGZILLA_USER_NAME'
 BUGZILLA_ENVIRON_USER_PASSWORD_NAME = 'BUGZILLA_USER_PASSWORD'
-BUGZILLA_URL = "https://bugzilla.redhat.com/xmlrpc.cgi"
+BUGZILLA_QUERY_PRODUCT = 'Red Hat Satellite 6'
+BUGZILLA_URL = 'https://bugzilla.redhat.com/xmlrpc.cgi'
 
 FILE_NAME_PATTERN = '*.py'
 

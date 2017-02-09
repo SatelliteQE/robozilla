@@ -16,14 +16,18 @@ class FilesProvider(object):
     def get_files(self, scan_path=None):
         if scan_path is None:
             scan_path = self._scan_path
+        if os.path.isfile(scan_path):
+            if fnmatch.fnmatch(scan_path, FILE_NAME_PATTERN):
+                yield scan_path
 
-        for name in sorted(os.listdir(scan_path)):
-            full_path = os.path.join(scan_path, name)
-            if os.path.isdir(full_path):
-                for file_path in self.get_files(full_path):
-                    yield file_path
-            elif os.path.isfile(full_path):
-                if fnmatch.fnmatch(full_path, FILE_NAME_PATTERN):
-                    yield full_path
-            else:
-                pass
+        else:
+            for name in sorted(os.listdir(scan_path)):
+                full_path = os.path.join(scan_path, name)
+                if os.path.isdir(full_path):
+                    for file_path in self.get_files(full_path):
+                        yield file_path
+                elif os.path.isfile(full_path):
+                    if fnmatch.fnmatch(full_path, FILE_NAME_PATTERN):
+                        yield full_path
+                else:
+                    pass

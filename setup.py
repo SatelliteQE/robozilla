@@ -16,7 +16,7 @@ entry_points = {'console_scripts': ['robozilla=robozilla.scan:main']}
 
 requirements = [
     'Click>=6.0',
-    'python_bugzilla==1.2.2',
+    'python_bugzilla',
     'six'
 ]
 test_requirements = []
@@ -24,7 +24,7 @@ test_requirements = []
 
 setup(
     name='robozilla',
-    version='0.1.3',
+    version='0.1.4',
     packages=packages,
     url='https://github.com/ldjebran/robozilla',
     license='GNU General Public License v3 (GPLv3)',
