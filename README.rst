@@ -72,12 +72,12 @@ Milestones:
       * warn about possible bugs fixture regression or bugs work around failure
 
 
-a very early stage sample output:
+scanning tests/foreman at master branch output:
 
 .. code-block:: sh
 
-    user:~/projects/robottelo-fork$ robozilla --all
-    scanning: /home/user/projects/robottelo-fork
+    user:~/projects/robottelo-fork/tests/foreman$ robozilla --all
+    scanning: /home/user/projects/robottelo-fork/tests/foreman
     warn: True
     duplicates: True
     clones: True
@@ -93,7 +93,7 @@ a very early stage sample output:
     WARNING: bz_bug_is_open handler string found, but no bug id retrieved
        line : 132 file: ../robottelo-fork/tests/foreman/ui/test_domain.py
        line content: if bug_id is not None and bz_bug_is_open(bug_id):
-    found 109 bugs usage in 71 files (occurrences 221) in 0.19 seconds
+    found 109 bugs usage in 71 files (occurrences 221) in 0.15 seconds
     getting bugs info ...
     generating report ...
     Handler           | BZ         | State                  | Flags                  | Line -> File
@@ -103,10 +103,14 @@ a very early stage sample output:
     skip_if_bug_open  | 1374253    | VERIFIED               | sat-6.3.0+             | 1458 -> ../robottelo-fork/tests/foreman/api/test_classparameters.py
     skip_if_bug_open  | 1147100    | ASSIGNED               | sat-backlog+           | 1034 -> ../robottelo-fork/tests/foreman/api/test_contentview.py
     skip_if_bug_open  | 1242534    | CLOSED_ERRATA          | sat-6.2.0+             | 647 -> ../robottelo-fork/tests/foreman/api/test_contentviewfilter.py
+         OTHER CLONES:
+         - 1391042    - NEW                    - sat-6.1.z?
     skip_if_bug_open  | 1349364    | VERIFIED               | sat-6.3.0+, sat-6.2.z+ | 129 -> ../robottelo-fork/tests/foreman/api/test_discoveredhost.py
     bz_bug_is_open    | 1392919    | NEW                    | sat-backlog?           | 148 -> ../robottelo-fork/tests/foreman/api/test_discoveredhost.py
     skip_if_bug_open  | 1217635    | CLOSED_WONTFIX         | sat-backlog?           | 608 -> ../robottelo-fork/tests/foreman/api/test_docker.py
     skip_if_bug_open  | 1282431    | CLOSED_ERRATA          | sat-6.1.z+             | 1231 -> ../robottelo-fork/tests/foreman/api/test_docker.py
+         OTHER CLONES:
+         - 1316374    - CLOSED_ERRATA          - sat-6.2.0+
     bz_bug_is_open    | 1374669    | CLOSED_DUPLICATE       | sat-backlog?           | 98 -> ../robottelo-fork/tests/foreman/api/test_errata.py
          DUPLICATE OF:
          - 1108106    - CLOSED_ERRATA          - sat-6.2.0+
@@ -183,6 +187,8 @@ a very early stage sample output:
     skip_if_bug_open  | 1230902    | CLOSED_WONTFIX         | sat-backlog+           | 122 -> ../robottelo-fork/tests/foreman/api/test_operatingsystem.py
     skip_if_bug_open  | 1328935    | VERIFIED               | sat-6.3.0+             | 308 -> ../robottelo-fork/tests/foreman/api/test_operatingsystem.py
     skip_if_bug_open  | 1230865    | NEW                    | sat-backlog+           | 288 -> ../robottelo-fork/tests/foreman/api/test_organization.py
+         OTHER CLONES:
+         - 1236008    - NEW                    - sat-backlog+
     skip_if_bug_open  | 1395229    | POST                   | sat-6.3.0+             | 321 -> ../robottelo-fork/tests/foreman/api/test_organization.py
     skip_if_bug_open  | 1395229    | POST                   | sat-6.3.0+             | 342 -> ../robottelo-fork/tests/foreman/api/test_organization.py
     skip_if_bug_open  | 1395229    | POST                   | sat-6.3.0+             | 373 -> ../robottelo-fork/tests/foreman/api/test_organization.py
@@ -192,8 +198,14 @@ a very early stage sample output:
     skip_if_bug_open  | 1378442    | NEW                    | sat-backlog?           | 683 -> ../robottelo-fork/tests/foreman/api/test_repository.py
     skip_if_bug_open  | 1311113    | NEW                    | sat-backlog?           | 741 -> ../robottelo-fork/tests/foreman/api/test_repository.py
     skip_if_bug_open  | 1328092    | CLOSED_ERRATA          | sat-6.2.z+             | 817 -> ../robottelo-fork/tests/foreman/api/test_repository.py
+         OTHER CLONES:
+         - 1405503    - POST                   - sat-6.3.0+
     skip_if_bug_open  | 1328092    | CLOSED_ERRATA          | sat-6.2.z+             | 846 -> ../robottelo-fork/tests/foreman/api/test_repository.py
+         OTHER CLONES:
+         - 1405503    - POST                   - sat-6.3.0+
     skip_if_bug_open  | 1328092    | CLOSED_ERRATA          | sat-6.2.z+             | 874 -> ../robottelo-fork/tests/foreman/api/test_repository.py
+         OTHER CLONES:
+         - 1405503    - POST                   - sat-6.3.0+
     skip_if_bug_open  | 1194476    | NEW                    | sat-backlog+           | 1103 -> ../robottelo-fork/tests/foreman/api/test_repository.py
     bz_bug_is_open    | 1112657    | CLOSED_ERRATA          | sat-6.1.0+             | 42 -> ../robottelo-fork/tests/foreman/api/test_role.py
     bz_bug_is_open    | 1112657    | CLOSED_ERRATA          | sat-6.1.0+             | 57 -> ../robottelo-fork/tests/foreman/api/test_role.py
@@ -232,6 +244,8 @@ a very early stage sample output:
          - 1353471    - CLOSED_ERRATA          - sat-6.2.0+
     bz_bug_is_open    | 1328943    | CLOSED_ERRATA          | sat-6.2.0+             | 650 -> ../robottelo-fork/tests/foreman/cli/test_contentviewfilter.py
     skip_if_bug_open  | 1388642    | POST                   | sat-6.3.0+             | 834 -> ../robottelo-fork/tests/foreman/cli/test_contentviewfilter.py
+         OTHER CLONES:
+         - 1398677    - CLOSED_DUPLICATE       - sat-6.3.0?
     skip_if_bug_open  | 1377990    | POST                   | sat-6.3.0?             | 148 -> ../robottelo-fork/tests/foreman/cli/test_discoveryrule.py
     skip_if_bug_open  | 1377990    | POST                   | sat-6.3.0?             | 310 -> ../robottelo-fork/tests/foreman/cli/test_discoveryrule.py
     skip_if_bug_open  | 1359665    | CLOSED_ERRATA          | sat-6.2.z+             | 476 -> ../robottelo-fork/tests/foreman/cli/test_docker.py
@@ -243,6 +257,8 @@ a very early stage sample output:
     skip_if_bug_open  | 1359665    | CLOSED_ERRATA          | sat-6.2.z+             | 1007 -> ../robottelo-fork/tests/foreman/cli/test_docker.py
     skip_if_bug_open  | 1359665    | CLOSED_ERRATA          | sat-6.2.z+             | 1063 -> ../robottelo-fork/tests/foreman/cli/test_docker.py
     skip_if_bug_open  | 1282431    | CLOSED_ERRATA          | sat-6.1.z+             | 1496 -> ../robottelo-fork/tests/foreman/cli/test_docker.py
+         OTHER CLONES:
+         - 1316374    - CLOSED_ERRATA          - sat-6.2.0+
     skip_if_bug_open  | 1230915    | CLOSED_ERRATA          | sat-6.1.z+             | 1547 -> ../robottelo-fork/tests/foreman/cli/test_docker.py
     skip_if_bug_open  | 1269196    | CLOSED_WONTFIX         | sat-backlog+           | 1548 -> ../robottelo-fork/tests/foreman/cli/test_docker.py
     skip_if_bug_open  | 1230915    | CLOSED_ERRATA          | sat-6.1.z+             | 1581 -> ../robottelo-fork/tests/foreman/cli/test_docker.py
@@ -327,8 +343,14 @@ a very early stage sample output:
          DEPEND ON:
          - 1103945    - CLOSED_CURRENTRELEASE  - sat-6.0.4+
     skip_if_bug_open  | 1328092    | CLOSED_ERRATA          | sat-6.2.z+             | 687 -> ../robottelo-fork/tests/foreman/cli/test_repository.py
+         OTHER CLONES:
+         - 1405503    - POST                   - sat-6.3.0+
     skip_if_bug_open  | 1328092    | CLOSED_ERRATA          | sat-6.2.z+             | 718 -> ../robottelo-fork/tests/foreman/cli/test_repository.py
+         OTHER CLONES:
+         - 1405503    - POST                   - sat-6.3.0+
     skip_if_bug_open  | 1328092    | CLOSED_ERRATA          | sat-6.2.z+             | 751 -> ../robottelo-fork/tests/foreman/cli/test_repository.py
+         OTHER CLONES:
+         - 1405503    - POST                   - sat-6.3.0+
     bz_bug_is_open    | 1413145    | NEW                    | sat-6.3.0?             | 1081 -> ../robottelo-fork/tests/foreman/cli/test_repository.py
     skip_if_bug_open  | 1343006    | CLOSED_ERRATA          | sat-6.2.0+             | 1142 -> ../robottelo-fork/tests/foreman/cli/test_repository.py
          DEPEND ON:
@@ -349,9 +371,13 @@ a very early stage sample output:
     skip_if_bug_open  | 1395229    | POST                   | sat-6.3.0+             | 556 -> ../robottelo-fork/tests/foreman/cli/test_usergroup.py
     skip_if_bug_open  | 1395229    | POST                   | sat-6.3.0+             | 578 -> ../robottelo-fork/tests/foreman/cli/test_usergroup.py
     skip_if_bug_open  | 1367032    | VERIFIED               | sat-6.3.0+, sat-6.2.z+ | 318 -> ../robottelo-fork/tests/foreman/cli/test_variables.py
+         OTHER CLONES:
+         - 1412124    - POST                   - sat-6.2.z?
     skip_if_bug_open  | 1371794    | POST                   | sat-6.3.0+             | 1332 -> ../robottelo-fork/tests/foreman/cli/test_variables.py
     bz_bug_is_open    | 1166875    | NEW                    | sat-backlog?           | 821 -> ../robottelo-fork/tests/foreman/endtoend/test_api_endtoend.py
     bz_bug_is_open    | 1325995    | VERIFIED               | sat-6.3.0+             | 926 -> ../robottelo-fork/tests/foreman/endtoend/test_api_endtoend.py
+         OTHER CLONES:
+         - 1415073    - POST                   - sat-6.2.z?
     bz_bug_is_open    | 1328202    | CLOSED_ERRATA          | sat-6.2.0+             | 356 -> ../robottelo-fork/tests/foreman/endtoend/test_cli_endtoend.py
     bz_bug_is_open    | 1326101    | NEW                    | sat-backlog?           | 420 -> ../robottelo-fork/tests/foreman/endtoend/test_cli_endtoend.py
     bz_bug_is_open    | 1191422    | CLOSED_ERRATA          | sat-6.1.0+             | 401 -> ../robottelo-fork/tests/foreman/endtoend/test_ui_endtoend.py
@@ -367,6 +393,8 @@ a very early stage sample output:
     skip_if_bug_open  | 1324484    | CLOSED_ERRATA          | sat-6.2.0+             | 453 -> ../robottelo-fork/tests/foreman/ui/test_bookmark.py
     skip_if_bug_open  | 1324484    | CLOSED_ERRATA          | sat-6.2.0+             | 493 -> ../robottelo-fork/tests/foreman/ui/test_bookmark.py
     skip_if_bug_open  | 1295179    | CLOSED_ERRATA          | sat-6.2.0+             | 1166 -> ../robottelo-fork/tests/foreman/ui/test_classparameters.py
+         OTHER CLONES:
+         - 1314392    - CLOSED_ERRATA          - sat-6.1.z+
     skip_if_bug_open  | 1378486    | POST                   | sat-6.3.0+             | 231 -> ../robottelo-fork/tests/foreman/ui/test_discoveryrule.py
     skip_if_bug_open  | 1308831    | VERIFIED               | sat-6.3.0+             | 299 -> ../robottelo-fork/tests/foreman/ui/test_discoveryrule.py
     skip_if_bug_open  | 1378486    | POST                   | sat-6.3.0+             | 542 -> ../robottelo-fork/tests/foreman/ui/test_discoveryrule.py
@@ -389,18 +417,13 @@ a very early stage sample output:
     skip_if_bug_open  | 1289571    | ON_QA                  | sat-6.3.0+             | 80 -> ../robottelo-fork/tests/foreman/ui/test_oscapcontent.py
     skip_if_bug_open  | 1293296    | ON_QA                  | sat-6.3.0+             | 116 -> ../robottelo-fork/tests/foreman/ui/test_oscappolicy.py
     skip_if_bug_open  | 1394390    | POST                   | sat-6.3.0+             | 139 -> ../robottelo-fork/tests/foreman/ui/test_packages.py
-         CLONE OF:
+         OTHER CLONES:
          - 1386670    - CLOSED_ERRATA          - sat-6.2.z+
          DEPEND ON:
          - 1386670    - CLOSED_ERRATA          - sat-6.2.z+
     skip_if_bug_open  | 1394390    | POST                   | sat-6.3.0+             | 1454 -> ../robottelo-fork/tests/foreman/ui/test_repository.py
-         CLONE OF:
+         OTHER CLONES:
          - 1386670    - CLOSED_ERRATA          - sat-6.2.z+
          DEPEND ON:
          - 1386670    - CLOSED_ERRATA          - sat-6.2.z+
-    parse time:356.0 seconds
-
-
-
-
-
+    parse time:410.0 seconds
