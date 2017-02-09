@@ -104,7 +104,7 @@ class BZReader(object):
 
     def get_bug_data(self, bug_id):
         """Get data for a single bug_id"""
-        bug_data = self._cache.get(bug_id)
+        bug_data = self._cache.get(str(bug_id))
         if not bug_data:
             bz_conn = self._get_connection()
             try:
@@ -200,10 +200,26 @@ class BZReader(object):
         bug_data['clones'] = [
             bug_clone_data for bug_clone_data in bugs_clones_data]
 
-        # todo create a key for all_clones by combining clone_of and clones
+        str_bug_id = str(bug.id)
+        other_clones = {}
 
-        bug_data['id'] = str(bug.id)
-        self._cache[bug_data['id']] = bug_data
+        def add_to_other_clones(data):
+            if data['id'] not in other_clones and data['id'] != bug_data['id']:
+                other_clones[data['id']] = data
+
+        bug_clone_of_data = bug_data.get('clone_of', None)
+        if bug_clone_of_data:
+            other_clones[bug_clone_of_data['id']] = bug_clone_of_data
+            for bug_clone_of_clone in bug_clone_of_data['clones']:
+                add_to_other_clones(bug_clone_of_clone)
+
+        for bug_clone_data in bug_data['clones']:
+            add_to_other_clones(bug_clone_data)
+
+        bug_data['other_clones'] = other_clones
+
+        bug_data['id'] = str_bug_id
+        self._cache[str_bug_id] = bug_data
         return bug_data
 
     def bugs_status(self):

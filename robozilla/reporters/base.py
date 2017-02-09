@@ -85,6 +85,8 @@ class RawReporter(object):
     def output_list(self, bug_data, field_name, title, init_tab=''):
         field_list = bug_data.get(field_name, None)
         if field_list:
+            if isinstance(field_list, dict):
+                field_list = list(field_list.values())
             tab_str = ' ' * 4 + init_tab
             self.output('{0} {1}:'.format(tab_str, title))
             for field_entry in field_list:
@@ -119,13 +121,16 @@ class RawReporter(object):
         ))
 
         self.output_recursive(bug_data, 'duplicate_of', 'DUPLICATE OF')
-        self.output_list(bug_data, 'clones', 'CLONES')
-        self.output_recursive(bug_data, 'clone_of', 'CLONE OF')
-        # get all the clones of clone_of
-        bug_clone_of_data = bug_data.get('clone_of', None)
-        if bug_clone_of_data:
-            self.output_list(bug_clone_of_data, 'clones', 'CLONES',
-                             init_tab=' ' * 4)
+        self.output_list(bug_data, 'other_clones', 'OTHER CLONES')
+        # todo a command line option to choose from the two representation
+        # for a detailed report
+        # self.output_list(bug_data, 'clones', 'CLONES')
+        # self.output_recursive(bug_data, 'clone_of', 'CLONE OF')
+        # # get all the clones of clone_of
+        # bug_clone_of_data = bug_data.get('clone_of', None)
+        # if bug_clone_of_data:
+        #     self.output_list(bug_clone_of_data, 'clones', 'CLONES',
+        #                      init_tab=' ' * 4)
 
         self.output_list(bug_data, 'dependent_on', 'DEPEND ON')
 
