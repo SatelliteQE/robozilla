@@ -204,7 +204,7 @@ class BZReader(object):
         other_clones = {}
 
         def add_to_other_clones(data):
-            if data['id'] not in other_clones and data['id'] != bug_data['id']:
+            if data['id'] not in other_clones and data['id'] != str_bug_id:
                 other_clones[data['id']] = data
 
         bug_clone_of_data = bug_data.get('clone_of', None)
