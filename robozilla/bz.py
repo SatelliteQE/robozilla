@@ -209,8 +209,8 @@ class BZReader(object):
 
         bug_clone_of_data = bug_data.get('clone_of', None)
         if bug_clone_of_data:
-            other_clones[bug_clone_of_data['id']] = bug_clone_of_data
-            for bug_clone_of_clone in bug_clone_of_data['clones']:
+            add_to_other_clones(bug_clone_of_data)
+            for bug_clone_of_clone in bug_clone_of_data.get('clones', []):
                 add_to_other_clones(bug_clone_of_clone)
 
         for bug_clone_data in bug_data['clones']:
