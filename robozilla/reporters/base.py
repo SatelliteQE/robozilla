@@ -66,11 +66,11 @@ class RawReporter(object):
     def output(self, *args):
         print(*args)
 
-    def output_recursive(self, bug_data, field_name, title):
+    def output_recursive(self, bug_data, field_name, title, init_tab=''):
         field_data = bug_data.get(field_name)
         ind = 4
         while field_data is not None:
-            tab_str = ' ' * ind
+            tab_str = ' ' * ind + init_tab
             self.output('{0} {1}:'.format(tab_str, title))
             self.output('{0} - {1} - {2} - {3}'.format(
                 tab_str,
@@ -81,6 +81,20 @@ class RawReporter(object):
             )
             field_data = field_data.get(field_name)
             ind *= 2
+
+    def output_list(self, bug_data, field_name, title, init_tab=''):
+        field_list = bug_data.get(field_name, None)
+        if field_list:
+            tab_str = ' ' * 4 + init_tab
+            self.output('{0} {1}:'.format(tab_str, title))
+            for field_entry in field_list:
+                self.output('{0} - {1} - {2} - {3}'.format(
+                    tab_str,
+                    self._left_just_string(str(field_entry['id']), 10),
+                    self._left_just_string(field_entry['status_resolution'],
+                                           22),
+                    self._get_flags_string(field_entry.get('flags', '')))
+                )
 
     def write(self, bug_id, bug_data, handler_name, file_path,
               file_line_number):
@@ -105,19 +119,15 @@ class RawReporter(object):
         ))
 
         self.output_recursive(bug_data, 'duplicate_of', 'DUPLICATE OF')
+        self.output_list(bug_data, 'clones', 'CLONES')
         self.output_recursive(bug_data, 'clone_of', 'CLONE OF')
-        dependent_on = bug_data.get('dependent_on', None)
-        if dependent_on:
-            tab_str = ' ' * 4
-            self.output('{0} {1}:'.format(tab_str, 'DEPEND ON'))
-            for depend_on in dependent_on:
-                self.output('{0} - {1} - {2} - {3}'.format(
-                    tab_str,
-                    self._left_just_string(str(depend_on['id']), 10),
-                    self._left_just_string(depend_on['status_resolution'],
-                                           22),
-                    self._get_flags_string(depend_on.get('flags', '')))
-                )
+        # get all the clones of clone_of
+        bug_clone_of_data = bug_data.get('clone_of', None)
+        if bug_clone_of_data:
+            self.output_list(bug_clone_of_data, 'clones', 'CLONES',
+                             init_tab=' ' * 4)
+
+        self.output_list(bug_data, 'dependent_on', 'DEPEND ON')
 
     def write_header(self):
         self.output('{0} | {1} | {2} | {3} | {4} -> {5}'.format(

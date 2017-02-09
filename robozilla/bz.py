@@ -12,6 +12,7 @@ from xml.parsers.expat import ExpatError, ErrorString
 from robozilla.constants import (
     BUGZILLA_ENVIRON_USER_NAME,
     BUGZILLA_ENVIRON_USER_PASSWORD_NAME,
+    BUGZILLA_QUERY_PRODUCT,
     BUGZILLA_URL,
     DEFAULT_INCLUDE_FIELDS,
     DUPLICATES_FIELD,
@@ -53,26 +54,51 @@ class BZReader(object):
         self.follow_clones = follow_clones
         self.follow_depends = follow_depends
 
+    def _get_query_include_fields(self):
+        return [
+            field for field in self.include_fields
+            if field not in [DUPLICATES_FIELD, CLONES_FIELD, DEPENDENT_FIELD]
+        ]
+
     def _get_connection(self):
-        # bz_credentials to be defined, for the moment connect as anonymous
         if not self._connection:
-            bz_conn = bugzilla.RHBugzilla(**self.credentials)
-            bz_conn.connect(BUGZILLA_URL)
+            bz_conn = bugzilla.RHBugzilla(url=BUGZILLA_URL, **self.credentials)
             self._connection = bz_conn
         return self._connection
+
+    def _get_clones(self, bug_ids):
+        """return a list of bugzilla bugs that are cloned from bug_ids"""
+        include_fields = self._get_query_include_fields() + [CLONES_FIELD]
+        bz_conn = self._get_connection()
+        query = bz_conn.build_query(product=BUGZILLA_QUERY_PRODUCT,
+                                    include_fields=include_fields)
+        query['bug_id_type'] = 'anyexact'
+        query[CLONES_FIELD] = bug_ids
+        return bz_conn.query(query)
 
     def get_bug_data_in_bulk(self, bugs):
         """Get bug_data in bulk by given chunk in bugs
         bugs: a list of ids"""
         bz_conn = self._get_connection()
-        include_fields = [
-            field for field in self.include_fields
-            if field not in ['dupe_of']
-        ]
-        result = bz_conn.getbugs(bugs, include_fields=include_fields)
+        include_fields = self._get_query_include_fields()
+        result_bugs = bz_conn.getbugs(bugs, include_fields=include_fields)
         chunk_data = {}
-        for data in result:
-            bug_data = self.set_bug_data_fields(data)
+        # create a dict of bug id clones bugs
+        bugs_clones = {}
+        if self.follow_clones:
+            for c_bug in self._get_clones(bugs):
+                bug_id = getattr(c_bug, CLONES_FIELD)
+                c_bug_data = self.set_bug_data_fields(c_bug,
+                                                      base_data_only=True)
+                if bug_id in bugs_clones:
+                    bugs_clones[bug_id].append(c_bug_data)
+                else:
+                    bugs_clones[bug_id] = [c_bug_data]
+
+        for bug in result_bugs:
+            bug_clones_data = bugs_clones.get(bug.id, [])
+            bug_data = self.set_bug_data_fields(
+                bug, bugs_clones_data=bug_clones_data)
             chunk_data[bug_data['id']] = bug_data
         return chunk_data
 
@@ -86,7 +112,15 @@ class BZReader(object):
                     bug_id,
                     include_fields=self.include_fields
                 )
-                bug_data = self.set_bug_data_fields(bug)
+                bug_clones_data = []
+                if self.follow_clones:
+                    bug_clones_data = [
+                        self.set_bug_data_fields(
+                            clone_bug, base_data_only=True)
+                        for clone_bug in self._get_clones([bug_id])
+                    ]
+                bug_data = self.set_bug_data_fields(
+                    bug, bugs_clones_data=bug_clones_data)
 
             except (ExpatError, ErrorString, Fault):
                 # to handle this
@@ -94,16 +128,21 @@ class BZReader(object):
 
         return bug_data
 
-    def set_bug_data_fields(self, bug):
+    def set_bug_data_fields(self, bug, bugs_clones_data=None,
+                            base_data_only=False):
         """Get a bug object and returns a dict
         containing included_fields and flags and also
         add extra fields getting relations as dupes or
         clones"""
+        if bugs_clones_data is None:
+            bugs_clones_data = []
+
         bug_data = {}
         for field in self.include_fields:
+            field_data = getattr(bug, field, None)
             if field == 'flags' and self._flags_fields:
                 flags_data = {}
-                flags = getattr(bug, field, [])
+                flags = field_data if field_data is not None else []
                 for flag_entry in flags:
                     key_name, value_name = self._flags_fields
                     key = flag_entry.get(key_name, '')
@@ -119,43 +158,49 @@ class BZReader(object):
 
                 bug_data[field] = flags_data
             else:
-                bug_data[field] = getattr(bug, field, None)
+                bug_data[field] = field_data
 
-        if bug.resolution:
+        if bug_data['resolution']:
             bug_data['status_resolution'] = '{0}_{1}'.format(
-                bug.status,
-                bug.resolution
+                bug_data['status'],
+                bug_data['resolution']
             )
         else:
-            bug_data['status_resolution'] = bug.status
+            bug_data['status_resolution'] = bug_data['status']
 
-        # getting dupes and clones are expensive and makes the elapsed time
-        # to be 20x slow so they are by default disabled
-        if (DUPLICATES_FIELD in self.include_fields and
-                self.follow_duplicates):
-            if bug_data[DUPLICATES_FIELD]:
-                bug_data['duplicate_of'] = self.get_bug_data(
-                    bug_data[DUPLICATES_FIELD])
-            else:
-                bug_data['duplicate_of'] = None
+        if not base_data_only:
+            # getting dupes and clones are expensive and makes the elapsed time
+            # to be 20x slow so they are by default disabled
+            if (DUPLICATES_FIELD in self.include_fields and
+                    self.follow_duplicates):
+                if bug_data[DUPLICATES_FIELD]:
+                    bug_data['duplicate_of'] = self.get_bug_data(
+                        bug_data[DUPLICATES_FIELD])
+                else:
+                    bug_data['duplicate_of'] = None
 
-        if (CLONES_FIELD in self.include_fields and
-                self.follow_clones):
-            if bug_data[CLONES_FIELD]:
-                bug_data['clone_of'] = self.get_bug_data(
-                    bug_data[CLONES_FIELD])
-            else:
-                bug_data['clone_of'] = None
+            if (CLONES_FIELD in self.include_fields and
+                    self.follow_clones):
+                if bug_data[CLONES_FIELD]:
+                    bug_data['clone_of'] = self.get_bug_data(
+                        bug_data[CLONES_FIELD])
+                else:
+                    bug_data['clone_of'] = None
 
-        if (DEPENDENT_FIELD in self.include_fields and
-                self.follow_depends):
-            if bug_data[DEPENDENT_FIELD]:
-                bug_data['dependent_on'] = []
-                for depend_on in bug_data[DEPENDENT_FIELD]:
-                    bug_data['dependent_on'].append(
-                        self.get_bug_data(depend_on))
-            else:
-                bug_data['dependent_on'] = None
+            if (DEPENDENT_FIELD in self.include_fields and
+                    self.follow_depends):
+                if bug_data[DEPENDENT_FIELD]:
+                    bug_data['dependent_on'] = []
+                    for depend_on in bug_data[DEPENDENT_FIELD]:
+                        bug_data['dependent_on'].append(
+                            self.get_bug_data(depend_on))
+                else:
+                    bug_data['dependent_on'] = None
+
+        bug_data['clones'] = [
+            bug_clone_data for bug_clone_data in bugs_clones_data]
+
+        # todo create a key for all_clones by combining clone_of and clones
 
         bug_data['id'] = str(bug.id)
         self._cache[bug_data['id']] = bug_data

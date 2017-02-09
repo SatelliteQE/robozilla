@@ -16,7 +16,7 @@ entry_points = {'console_scripts': ['robozilla=robozilla.scan:main']}
 
 requirements = [
     'Click>=6.0',
-    'python_bugzilla==1.2.2',
+    'python_bugzilla',
     'six'
 ]
 test_requirements = []
