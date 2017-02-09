@@ -54,6 +54,14 @@ class BZReader(object):
         self.follow_clones = follow_clones
         self.follow_depends = follow_depends
 
+        if self.follow_clones and CLONES_FIELD not in self.include_fields:
+            self.include_fields.append(CLONES_FIELD)
+        if self.follow_duplicates and (
+                    DUPLICATES_FIELD not in self.include_fields):
+            self.include_fields.append(DUPLICATES_FIELD)
+        if self.follow_depends and DEPENDENT_FIELD not in self.include_fields:
+            self.include_fields.append(DEPENDENT_FIELD)
+
     def _get_query_include_fields(self):
         return [
             field for field in self.include_fields

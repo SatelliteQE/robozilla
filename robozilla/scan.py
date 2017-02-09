@@ -61,19 +61,17 @@ def main(scan_dir, filters, warn, all, duplicates, clones, depends, echo, user,
     reader_options = {
             'follow_clones': False,
             'follow_duplicates': False,
+            'follow_depends': False,
             'include_fields': DEFAULT_INCLUDE_FIELDS
     }
     if clones:
         reader_options['follow_clones'] = True
-        reader_options['include_fields'] += [CLONES_FIELD]
 
     if duplicates:
         reader_options['follow_duplicates'] = True
-        reader_options['include_fields'] += [DUPLICATES_FIELD]
 
     if depends:
         reader_options['follow_depends'] = True
-        reader_options['include_fields'] += [DEPENDENT_FIELD]
 
     if (user and not password) or (not user and password):
         raise Exception('you must provide a user and password')
