@@ -26,6 +26,7 @@ class BZReader(object):
     _flags_fields = ('name', 'status')
     _flags_force_include = []
     _flags_key_filters = ['sat-*']
+    _always_use_all_fields = True
 
     def __init__(self,
                  credentials=None,
@@ -54,7 +55,17 @@ class BZReader(object):
         self.follow_clones = follow_clones
         self.follow_depends = follow_depends
 
+        if self.follow_clones and CLONES_FIELD not in self.include_fields:
+            self.include_fields.append(CLONES_FIELD)
+        if self.follow_duplicates and (
+                    DUPLICATES_FIELD not in self.include_fields):
+            self.include_fields.append(DUPLICATES_FIELD)
+        if self.follow_depends and DEPENDENT_FIELD not in self.include_fields:
+            self.include_fields.append(DEPENDENT_FIELD)
+
     def _get_query_include_fields(self):
+        if self._always_use_all_fields:
+            return self.include_fields
         return [
             field for field in self.include_fields
             if field not in [DUPLICATES_FIELD, CLONES_FIELD, DEPENDENT_FIELD]
@@ -68,7 +79,9 @@ class BZReader(object):
 
     def _get_clones(self, bug_ids):
         """return a list of bugzilla bugs that are cloned from bug_ids"""
-        include_fields = self._get_query_include_fields() + [CLONES_FIELD]
+        include_fields = self._get_query_include_fields()
+        if CLONES_FIELD not in include_fields:
+            include_fields += [CLONES_FIELD]
         bz_conn = self._get_connection()
         query = bz_conn.build_query(product=BUGZILLA_QUERY_PRODUCT,
                                     include_fields=include_fields)
@@ -139,7 +152,17 @@ class BZReader(object):
 
         bug_data = {}
         for field in self.include_fields:
-            field_data = getattr(bug, field, None)
+            if field in bug.__dict__:
+                # field can exist with hasattr(bug, field), but not returned
+                # by getattr, and if we use getattr(bug, field, None)
+                # this will make a request to bugzilla, forcing use to waste
+                # time inutilly
+                field_data = getattr(bug, field)
+            else:
+                # some fields are not returned if they are None
+                # any way if it's not here it's a None
+                # this reduce the time by x20
+                field_data = None
             if field == 'flags' and self._flags_fields:
                 flags_data = {}
                 flags = field_data if field_data is not None else []
