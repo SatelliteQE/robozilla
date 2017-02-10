@@ -65,7 +65,8 @@ class BZReader(object):
 
     def _get_query_include_fields(self):
         if self._always_use_all_fields:
-            return self.include_fields
+            # always return a copy of the list
+            return list(self.include_fields)
         return [
             field for field in self.include_fields
             if field not in [DUPLICATES_FIELD, CLONES_FIELD, DEPENDENT_FIELD]
@@ -230,7 +231,7 @@ class BZReader(object):
             if data['id'] not in other_clones and data['id'] != str_bug_id:
                 other_clones[data['id']] = data
 
-        bug_clone_of_data = bug_data.get('clone_of', None)
+        bug_clone_of_data = bug_data.get('clone_of')
         if bug_clone_of_data:
             add_to_other_clones(bug_clone_of_data)
             for bug_clone_of_clone in bug_clone_of_data.get('clones', []):
