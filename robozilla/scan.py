@@ -5,9 +5,6 @@ import click
 from robozilla.parser import Parser
 from robozilla.constants import (
     DEFAULT_INCLUDE_FIELDS,
-    DUPLICATES_FIELD,
-    CLONES_FIELD,
-    DEPENDENT_FIELD,
 )
 from robozilla.filters import get_filters
 
