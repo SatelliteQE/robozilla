@@ -33,3 +33,23 @@ class Base(object):
             bug_ids = cls._get_compiled_re().findall(text)
 
         return bug_ids
+
+    @classmethod
+    def retrieve_warn(cls, text):
+        bug_ids = []
+        warn = False
+        string_present = False
+
+        if cls.find_string:
+            string_present = cls.is_string_present(text)
+
+            if not string_present:
+                return bug_ids, warn
+
+        if cls.re_pattern:
+            bug_ids = cls._get_compiled_re().findall(text)
+
+        if string_present and not bug_ids:
+            warn = True
+
+        return bug_ids, warn
