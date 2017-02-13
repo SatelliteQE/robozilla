@@ -38,9 +38,8 @@ class Parser(object):
             line_number = 0
             for line in fr:
                 for filter_handler in self.filters:
-                    bug_ids = filter_handler.retrieve(line)
-                    if (not bug_ids and self.warn and
-                            filter_handler.is_string_present(line)):
+                    bug_ids, warn = filter_handler.retrieve_warn(line)
+                    if warn and self.warn and self.reporter:
                         self.reporter.output_warn(
                             'WARNING: {0} handler string found, but no bug id'
                             ' retrieved'.format(filter_handler.name))
