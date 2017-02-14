@@ -24,7 +24,7 @@ test_requirements = []
 
 setup(
     name='robozilla',
-    version='0.1.6',
+    version='0.1.7',
     packages=packages,
     url='https://github.com/ldjebran/robozilla',
     license='GNU General Public License v3 (GPLv3)',
