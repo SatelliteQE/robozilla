@@ -101,6 +101,8 @@ class RawReporter(object):
     def write(self, bug_id, bug_data, handler_name, file_path,
               file_line_number):
         """Write the bug to something print for the moment"""
+        if not bug_data:
+            bug_data = {}
         if bug_data:
             bug_status = bug_data['status']
             bug_resolution = bug_data['resolution']

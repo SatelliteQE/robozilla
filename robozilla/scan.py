@@ -4,6 +4,8 @@ import click
 
 from robozilla.parser import Parser
 from robozilla.constants import (
+    BUGZILLA_ENVIRON_USER_NAME,
+    BUGZILLA_ENVIRON_USER_PASSWORD_NAME,
     DEFAULT_INCLUDE_FIELDS,
 )
 from robozilla.filters import get_filters
@@ -69,6 +71,12 @@ def main(scan_dir, filters, warn, all, duplicates, clones, depends, echo, user,
 
     if depends:
         reader_options['follow_depends'] = True
+
+    if not user and BUGZILLA_ENVIRON_USER_NAME in os.environ:
+            user = os.environ[BUGZILLA_ENVIRON_USER_NAME]
+
+    if not password and BUGZILLA_ENVIRON_USER_PASSWORD_NAME in os.environ:
+            password = os.environ[BUGZILLA_ENVIRON_USER_PASSWORD_NAME]
 
     if (user and not password) or (not user and password):
         raise Exception('you must provide a user and password')
