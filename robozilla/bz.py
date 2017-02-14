@@ -2,6 +2,7 @@
 import copy
 import fnmatch
 import os
+import logging
 
 import bugzilla
 
@@ -19,6 +20,8 @@ from robozilla.constants import (
     CLONES_FIELD,
     DEPENDENT_FIELD
 )
+
+logger = logging.Logger(__name__)
 
 
 class BZReader(object):
@@ -38,6 +41,8 @@ class BZReader(object):
 
         if credentials is None:
             credentials = {}
+
+        if not credentials:
             if BUGZILLA_ENVIRON_USER_NAME in os.environ:
                 credentials['user'] = os.environ[
                     BUGZILLA_ENVIRON_USER_NAME]
@@ -101,19 +106,29 @@ class BZReader(object):
         bugs_clones = {}
         if self.follow_clones:
             for c_bug in self._get_clones(bugs):
-                bug_id = getattr(c_bug, CLONES_FIELD)
-                c_bug_data = self.set_bug_data_fields(c_bug,
-                                                      base_data_only=True)
-                if bug_id in bugs_clones:
-                    bugs_clones[bug_id].append(c_bug_data)
-                else:
-                    bugs_clones[bug_id] = [c_bug_data]
+                if c_bug is not None:
+                    bug_id = getattr(c_bug, CLONES_FIELD)
+                    c_bug_data = self.set_bug_data_fields(c_bug,
+                                                          base_data_only=True)
+                    if bug_id in bugs_clones:
+                        bugs_clones[bug_id].append(c_bug_data)
+                    else:
+                        bugs_clones[bug_id] = [c_bug_data]
 
         for bug in result_bugs:
-            bug_clones_data = bugs_clones.get(bug.id, [])
-            bug_data = self.set_bug_data_fields(
-                bug, bugs_clones_data=bug_clones_data)
-            chunk_data[bug_data['id']] = bug_data
+            if bug is not None:
+                bug_clones_data = bugs_clones.get(bug.id, [])
+                bug_data = self.set_bug_data_fields(
+                    bug, bugs_clones_data=bug_clones_data)
+                chunk_data[bug_data['id']] = bug_data
+
+        bugs_not_returned = set(bugs).difference(
+            [str(bug.id) for bug in result_bugs if bug is not None])
+
+        if bugs_not_returned:
+            logging.warning('objects for bugs ids not received {}'.format(
+                bugs_not_returned))
+
         return chunk_data
 
     def get_bug_data(self, bug_id):
@@ -126,15 +141,16 @@ class BZReader(object):
                     bug_id,
                     include_fields=self.include_fields
                 )
-                bug_clones_data = []
-                if self.follow_clones:
-                    bug_clones_data = [
-                        self.set_bug_data_fields(
-                            clone_bug, base_data_only=True)
-                        for clone_bug in self._get_clones([bug_id])
-                    ]
-                bug_data = self.set_bug_data_fields(
-                    bug, bugs_clones_data=bug_clones_data)
+                if bug is not None:
+                    bug_clones_data = []
+                    if self.follow_clones:
+                        bug_clones_data = [
+                            self.set_bug_data_fields(
+                                clone_bug, base_data_only=True)
+                            for clone_bug in self._get_clones([bug_id])
+                        ]
+                    bug_data = self.set_bug_data_fields(
+                        bug, bugs_clones_data=bug_clones_data)
 
             except (ExpatError, ErrorString, Fault):
                 # to handle this
