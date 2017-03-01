@@ -24,3 +24,12 @@ DEFAULT_INCLUDE_FIELDS = [
 DUPLICATES_FIELD = 'dupe_of'
 CLONES_FIELD = 'cf_clone_of'
 DEPENDENT_FIELD = 'depends_on'
+
+COVERAGE_REJECTED = "qe_test_coverage-"
+COVERAGE_AUTOMATED = "qe_test_coverage+"
+COVERAGE_BACKLOG = "qe_test_coverage?"
+COVERAGE_INCLUDE_FIELDS = ['id']
+
+# BUGZILLA QUERY
+BUGZILLA_QUERY_URL = "https://bugzilla.redhat.com/query.cgi"
+DEFAULT_QUERY_INCLUDE_FIELDS = ['id', 'summary', 'flags']

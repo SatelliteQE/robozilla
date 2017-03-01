@@ -21,16 +21,16 @@ ____________
 
 Go to robottelo folder to scan and launch the command::
 
-    robozilla
+    robozilla scan
 
 or type::
 
-    robozilla path_to_scan
+    robozilla scan path_to_scan
 
 
 type --help for more command line options::
 
-    robozilla --help
+    robozilla scan --help
     Usage: robozilla [OPTIONS] [SCAN_DIR]
 
     Options:
