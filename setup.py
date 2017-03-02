@@ -6,7 +6,8 @@ from setuptools import setup
 packages = ['robozilla',
             'robozilla.filters',
             'robozilla.providers',
-            'robozilla.reporters'
+            'robozilla.reporters',
+            'robozilla.query'
             ]
 
 with open('README.rst') as readme_file:
