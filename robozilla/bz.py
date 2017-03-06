@@ -1,8 +1,8 @@
-
 import copy
 import fnmatch
 import os
 import logging
+from collections import defaultdict
 
 import bugzilla
 
@@ -24,8 +24,17 @@ from robozilla.constants import (
 logger = logging.Logger(__name__)
 
 
-class BZReader(object):
+def _filter_none(lst):
+    """Filter None values out of lst
 
+    :param lst: list to be filtered
+    :return: generator filtering Nones
+    """
+
+    return filter(lambda value: value is not None, lst)
+
+
+class BZReader(object):
     _flags_fields = ('name', 'status')
     _flags_force_include = []
     _flags_key_filters = ['sat-*']
@@ -93,34 +102,30 @@ class BZReader(object):
                                     include_fields=include_fields)
         query['bug_id_type'] = 'anyexact'
         query[CLONES_FIELD] = bug_ids
-        return bz_conn.query(query)
+        return _filter_none(bz_conn.query(query))
 
     def get_bug_data_in_bulk(self, bugs):
         """Get bug_data in bulk by given chunk in bugs
         bugs: a list of ids"""
         bz_conn = self._get_connection()
         include_fields = self._get_query_include_fields()
-        result_bugs = bz_conn.getbugs(bugs, include_fields=include_fields)
+        result_bugs = list(_filter_none(
+            bz_conn.getbugs(bugs, include_fields=include_fields)))
         chunk_data = {}
         # create a dict of bug id clones bugs
-        bugs_clones = {}
+        bugs_clones = defaultdict(list)
         if self.follow_clones:
             for c_bug in self._get_clones(bugs):
-                if c_bug is not None:
-                    bug_id = getattr(c_bug, CLONES_FIELD)
-                    c_bug_data = self.set_bug_data_fields(c_bug,
-                                                          base_data_only=True)
-                    if bug_id in bugs_clones:
-                        bugs_clones[bug_id].append(c_bug_data)
-                    else:
-                        bugs_clones[bug_id] = [c_bug_data]
+                bug_id = getattr(c_bug, CLONES_FIELD)
+                c_bug_data = self.set_bug_data_fields(
+                    c_bug, base_data_only=True)
+                bugs_clones[bug_id].append(c_bug_data)
 
         for bug in result_bugs:
-            if bug is not None:
-                bug_clones_data = bugs_clones.get(bug.id, [])
-                bug_data = self.set_bug_data_fields(
-                    bug, bugs_clones_data=bug_clones_data)
-                chunk_data[bug_data['id']] = bug_data
+            bug_clones_data = bugs_clones.get(bug.id, [])
+            bug_data = self.set_bug_data_fields(
+                bug, bugs_clones_data=bug_clones_data)
+            chunk_data[bug_data['id']] = bug_data
 
         bugs_not_returned = set(bugs).difference(
             [str(bug.id) for bug in result_bugs if bug is not None])
