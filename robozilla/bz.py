@@ -208,13 +208,15 @@ class BZReader(object):
             else:
                 bug_data[field] = field_data
 
-        if bug_data['resolution']:
-            bug_data['status_resolution'] = '{0}_{1}'.format(
-                bug_data['status'],
-                bug_data['resolution']
-            )
-        else:
-            bug_data['status_resolution'] = bug_data['status']
+        status = bug_data.get('status')
+        if status is not None:
+            bug_data['status_resolution'] = status
+            resolution = bug_data.get('resolution')
+            if resolution is not None:
+                bug_data['status_resolution'] = '{0}_{1}'.format(
+                    status,
+                    resolution
+                )
 
         if not base_data_only:
             # getting dupes and clones are expensive and makes the elapsed time
