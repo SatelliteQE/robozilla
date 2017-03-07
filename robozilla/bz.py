@@ -128,7 +128,10 @@ class BZReader(object):
             chunk_data[bug_data['id']] = bug_data
 
         bugs_not_returned = set(bugs).difference(
-            [str(bug.id) for bug in result_bugs if bug is not None])
+            {
+                str(bug.id) for bug in result_bugs
+            }
+        )
 
         if bugs_not_returned:
             logging.warning('objects for bugs ids not received {}'.format(
