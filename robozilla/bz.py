@@ -172,11 +172,6 @@ class BZReader(object):
                         ErrorString(error.code)
                     )
                 )
-            except (TypeError, ValueError):  # pragma: no cover
-                logger.warning(
-                    'Could not connect to {0}'.format(BUGZILLA_URL)
-                )
-
         return bug_data
 
     def set_bug_data_fields(self, bug, bugs_clones_data=None,
