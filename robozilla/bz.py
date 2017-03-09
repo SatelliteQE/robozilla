@@ -1,14 +1,12 @@
 import copy
-import fnmatch
-import os
 import logging
 from collections import defaultdict
+import os
+from xml.parsers.expat import ExpatError, ErrorString
 
 import bugzilla
-
-# to do handle errors
+import fnmatch
 from six.moves.xmlrpc_client import Fault
-from xml.parsers.expat import ExpatError, ErrorString
 
 from robozilla.constants import (
     BUGZILLA_ENVIRON_USER_NAME,
@@ -160,10 +158,20 @@ class BZReader(object):
                     bug_data = self.set_bug_data_fields(
                         bug, bugs_clones_data=bug_clones_data)
 
-            except (ExpatError, ErrorString, Fault):
-                # to handle this
-                pass
-
+            except ErrorString as error:
+                logger.warning(
+                    'Could not interpret bug. Error: {0}'.format(error)
+                )
+            except Fault as error:
+                logger.warning(
+                    'Could not fetch bug. Error: {0}'.format(error.faultString)
+                )
+            except ExpatError as error:
+                logger.warning(
+                    'Could not interpret bug. Error: {0}'.format(
+                        ErrorString(error.code)
+                    )
+                )
         return bug_data
 
     def set_bug_data_fields(self, bug, bugs_clones_data=None,
