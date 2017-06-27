@@ -4,6 +4,8 @@ BUGZILLA_ENVIRON_USER_PASSWORD_NAME = 'BUGZILLA_USER_PASSWORD'
 BUGZILLA_QUERY_PRODUCT = 'Red Hat Satellite 6'
 BUGZILLA_URL = 'https://bugzilla.redhat.com/xmlrpc.cgi'
 
+REDMINE_URL = 'http://projects.theforeman.org'
+
 FILE_NAME_PATTERN = '*.py'
 
 DEFAULT_INCLUDE_FIELDS = [
@@ -33,3 +35,17 @@ COVERAGE_INCLUDE_FIELDS = ['id']
 # BUGZILLA QUERY
 BUGZILLA_QUERY_URL = "https://bugzilla.redhat.com/query.cgi"
 DEFAULT_QUERY_INCLUDE_FIELDS = ['id', 'summary', 'flags']
+
+
+BZ_OPEN_STATUSES = [
+    'NEW',
+    'ASSIGNED',
+    'POST',
+    'MODIFIED'
+]
+BZ_CLOSED_STATUSES = [
+    'ON_QA',
+    'VERIFIED',
+    'RELEASE_PENDING',
+    'CLOSED'
+]
