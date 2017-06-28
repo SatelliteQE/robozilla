@@ -4,6 +4,7 @@
 from setuptools import setup
 
 packages = ['robozilla',
+            'robozilla.decorators',
             'robozilla.filters',
             'robozilla.providers',
             'robozilla.reporters',
@@ -25,7 +26,7 @@ test_requirements = []
 
 setup(
     name='robozilla',
-    version='0.1.8',
+    version='0.1.9',
     packages=packages,
     url='https://github.com/ldjebran/robozilla',
     license='GNU General Public License v3 (GPLv3)',
