@@ -494,8 +494,7 @@ class skip_if_bug_open(object):  # noqa pylint:disable=C0103,R0903
 def pytest_skip_if_bug_open(bug_type, bug_id, sat_version_picker=None,
                             config_picker=None):
     """Pytest parametrized tests can't work with the default `skip_if_bug_open`
-    this decorator returns a propoer Pytest.mark which can work with that
-    scenario.
+    this decorator returns a Pytest.mark which can work with that scenario.
     """
     return pytest.mark.skipif(
         (bz_bug_is_open if bug_type == 'bugzilla' else rm_bug_is_open)(
