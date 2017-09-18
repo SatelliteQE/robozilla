@@ -495,6 +495,42 @@ def pytest_skip_if_bug_open(bug_type, bug_id, sat_version_picker=None,
                             config_picker=None):
     """Pytest parametrized tests can't work with the default `skip_if_bug_open`
     this decorator returns a Pytest.mark which can work with that scenario.
+
+    Example:
+
+        @pytest_skip_if_bug_open(
+            'bugzilla', 1079482,
+            sat_version_picker=lambda: '6.2.10',
+            config_picker=lambda: {
+                'bz_credentials': {'user': '', 'password': ''}
+            }
+        )
+        @pytest.mark.parametrize("foo,bar", [('1', '2')], ids=['foo and bar'])
+        def test_something(foo, bar):
+            assert ....
+
+    Or make it a partial function:
+
+        from functools import partial
+        pytest_skip_if_bug_open = partial(
+            pytest_skip_if_bug_open,
+            sat_version_picker=a_function_returning_version,
+            config_picker=a_function_returning_config_dict
+        )
+
+    Then use as usual:
+
+        @pytest_skip_if_bug_open('bugzilla', 1079482)
+        @pytest.mark.parametrize("foo,bar", [('1', '2')], ids=['foo and bar'])
+        def test(foo, bar):
+            ...
+
+    :param str bug_type: Either 'bugzilla' or 'redmine'.
+    :param int bug_id: The ID of the bug to check when the decorator isrun.
+    :param sat_version_picker: a callable returning 'x.y.z'
+    :param config_picker: a callable returning a dictionary optionally with
+        {'bz_credentials': {'user': '', 'password': ''}}
+
     """
     return pytest.mark.skipif(
         (bz_bug_is_open if bug_type == 'bugzilla' else rm_bug_is_open)(
