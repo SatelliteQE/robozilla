@@ -97,13 +97,16 @@ def _get_redmine_bug_status_id(bug_id):
     return _redmine['issues'][bug_id]
 
 
-def rm_bug_is_open(bug_id):
+def rm_bug_is_open(bug_id, sat_version_picker=None,
+                   config_picker=None):
     """Tell whether Redmine bug ``bug_id`` is open.
 
     If information about bug ``bug_id`` cannot be fetched, the bug is assumed
     to be closed.
 
     :param bug_id: The ID of the bug being inspected.
+    :param sat_version_picker: not used, kept for API compatibility
+    :param config_picker: not used, kept for API compatibility
     :return: ``True`` if the bug is open. ``False`` otherwise.
     :rtype: bool
 
@@ -249,7 +252,10 @@ def _check_skip_conditions_for_bug_and_clones(bug, consider_flags=True,
         )
         for bug_or_clone in all_bugs
     )
-    return all(skip_results)
+    all_open = all(skip_results)
+    if all_open:
+        LOGGER.debug('Bugzilla {0} is open'.format(bug.get('id')))
+    return all_open
 
 
 class BZUnauthenticatedCall(Exception):
@@ -483,3 +489,17 @@ class skip_if_bug_open(object):  # noqa pylint:disable=C0103,R0903
                 bz_namespace.decorated_functions.append(
                     (get_func_name(func), str(self.bug_id))
                 )
+
+
+def pytest_skip_if_bug_open(bug_type, bug_id, sat_version_picker=None,
+                            config_picker=None):
+    """Pytest parametrized tests can't work with the default `skip_if_bug_open`
+    this decorator returns a propoer Pytest.mark which can work with that
+    scenario.
+    """
+    return pytest.mark.skipif(
+        (bz_bug_is_open if bug_type == 'bugzilla' else rm_bug_is_open)(
+            bug_id, sat_version_picker, config_picker
+        ),
+        reason='Skipping due to {0} {1}'.format(bug_type, bug_id)
+    )
