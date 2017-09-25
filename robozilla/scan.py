@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import os
 import json
 
@@ -196,6 +195,7 @@ def coverage(exclude_components, include_flags, exclude_flags, start_date,
             bz_query = BZQuery(**reader_options)
             bugs = bz_query.query(**query)
             print("{} = {}".format(coverage_type, len(bugs)))
+
 
 if __name__ == '__main__':
     main()
