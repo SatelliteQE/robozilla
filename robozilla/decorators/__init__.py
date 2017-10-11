@@ -1,5 +1,6 @@
 # coding: utf-8
 import logging
+import os
 import re
 from functools import partial, wraps
 from itertools import chain
@@ -9,7 +10,13 @@ import requests
 import unittest2
 
 from robozilla.bz import BZReader
-from robozilla.constants import BZ_OPEN_STATUSES, REDMINE_URL
+from robozilla.constants import (
+    BUGZILLA_ENVIRON_SAT_VERSION,
+    BUGZILLA_ENVIRON_USER_NAME,
+    BUGZILLA_ENVIRON_USER_PASSWORD_NAME,
+    BZ_OPEN_STATUSES,
+    REDMINE_URL
+)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -349,6 +356,9 @@ def bz_bug_is_open(bug_id, sat_version_picker=None,
     :rtype: bool
 
     """
+    config_picker = config_picker or default_config_picker
+    sat_version_picker = sat_version_picker or default_version_picker
+
     config = config_picker() if callable(config_picker) else {}
     bz_credentials = config.get('bz_credentials')
 
@@ -538,3 +548,23 @@ def pytest_skip_if_bug_open(bug_type, bug_id, sat_version_picker=None,
         ),
         reason='Skipping due to {0} {1}'.format(bug_type, bug_id)
     )
+
+
+def default_config_picker():
+    """If a custom config picker is not provided this one will be used by
+    default getting credentials from environment variables:
+        BUGZILLA_USER_NAME and BUGZILLA_USER_PASSWORD
+    """
+    user = os.environ.get(BUGZILLA_ENVIRON_USER_NAME)
+    password = os.environ.get(BUGZILLA_ENVIRON_USER_PASSWORD_NAME)
+    if user or password:
+        return {'bz_credentials': {'user': user, 'password': password}}
+    return {}
+
+
+def default_version_picker():
+    """If a version picker is not provided this one is used getting the
+    varsion from environment variable:
+        BUGZILLA_SAT_VERSION
+    """
+    return os.environ.get(BUGZILLA_ENVIRON_SAT_VERSION) or None

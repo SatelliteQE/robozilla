@@ -7,7 +7,7 @@ import data
 
 def test_parse_simple():
     bugs_set = {'1123360', '1405428', '1402826', '1328925', '1333805',
-                '1219610'}
+                '1219610', '1461026'}
 
     bz_reader = base.BZReaderForTest()
     bz_reader.set_cache(data.cache_data)
