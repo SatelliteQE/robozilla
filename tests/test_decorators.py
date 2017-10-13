@@ -1,10 +1,10 @@
 import pytest
 import robozilla
 from robozilla.decorators import pytest_skip_if_bug_open, skip_if_bug_open
-from data import cache_data
+from .data import cache_data
 
 # MOCK BZ READER to avoid connection to bugzilla
-from base import BZReaderForTest
+from .base import BZReaderForTest
 BZReaderForTest._cache_data = cache_data
 robozilla.decorators.BZReader = BZReaderForTest
 
