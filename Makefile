@@ -51,7 +51,7 @@ lint: ## check style with flake8
 	flake8 robozilla tests
 
 test: ## run tests quickly with the default Python
-	py.test -v --boxed
+	$$(which py.test) -v --boxed --cov --cov-config=.coveragerc tests/
 
 
 test-all: ## run tests on every Python version with tox

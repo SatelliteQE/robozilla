@@ -34,5 +34,8 @@ cache_data = {'1123360': {'status': 'CLOSED',
                           'whiteboard': '',
                           'flags': {'sat-backlog': '+'},
                           'resolution': 'WONTFIX',
-                          'id': '1219610'}
+                          'id': '1219610'},
+              '1461026': {'status': 'NEW',
+                          'flags': {'sat-6.2.0': '+'},
+                          'id': '1461026'}
               }

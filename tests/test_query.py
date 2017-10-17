@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from robozilla.query.exp import decode_exp_unit, decode_exp_list, decode_groups
+from robozilla.query.exp import decode_exp_unit, decode_exp_list
 
 
 class QueryExpTestCase(TestCase):
