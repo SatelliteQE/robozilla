@@ -14,6 +14,7 @@ from robozilla.constants import (
     BUGZILLA_ENVIRON_SAT_VERSION,
     BUGZILLA_ENVIRON_USER_NAME,
     BUGZILLA_ENVIRON_USER_PASSWORD_NAME,
+    BZ_CLOSED_STATUSES,
     BZ_OPEN_STATUSES,
     REDMINE_URL
 )
@@ -212,6 +213,8 @@ def _check_skip_condition_for_one_bug(bug, consider_flags,
     # NEW, ASSIGNED, MODIFIED, POST
     if bug['status'] in BZ_OPEN_STATUSES:
         return True
+    elif bug.get('status_resolution', bug['status']) in BZ_CLOSED_STATUSES:
+        return False
     elif config.get('upstream'):
         return False
 
@@ -249,17 +252,31 @@ def _check_skip_conditions_for_bug_and_clones(bug, consider_flags=True,
     :return: boolean indicating if it must be skipped or not
 
     """
+
     config = config or {}
     if bug is None:
         return False
-    all_bugs = chain([bug], bug.get('other_clones', {}).values())
-    skip_results = (
-        _check_skip_condition_for_one_bug(
-            bug_or_clone, consider_flags, sat_version_picker, config
+
+    if bug.get('resolution') == 'DUPLICATE' and bug.get('duplicate_of') is not None:  # noqa
+        # if is a DUPLICATE, unconsider the BZ and look only for the DUP
+        # and its clones
+        all_open = _check_skip_conditions_for_bug_and_clones(
+            bug.get('duplicate_of'),
+            consider_flags=consider_flags,
+            sat_version_picker=sat_version_picker,
+            config=config
         )
-        for bug_or_clone in all_bugs
-    )
-    all_open = all(skip_results)
+    else:
+        # If not DUPLICATE then look to all clones and chain results
+        all_bugs = chain([bug], bug.get('other_clones', {}).values())
+        skip_results = [
+            _check_skip_condition_for_one_bug(
+                bug_or_clone, consider_flags, sat_version_picker, config
+            )
+            for bug_or_clone in all_bugs
+        ]
+        all_open = all(skip_results)
+
     if all_open:
         LOGGER.debug('Bugzilla {0} is open'.format(bug.get('id')))
     return all_open
@@ -306,7 +323,8 @@ def _get_bugzilla_bug(bug_id, bz_credentials=None):
                 'id', 'status', 'whiteboard', 'flags', 'resolution',
                 'target_milestone'
             ],
-            follow_clones=True
+            follow_clones=True,
+            follow_duplicates=True  # only when resolution is 'DUPLICATE'
         )
         _bugzilla[bug_id] = reader.get_bug_data(bug_id)
         if not bz_credentials:
@@ -315,6 +333,7 @@ def _get_bugzilla_bug(bug_id, bz_credentials=None):
                 'Unauthenticated call made to BZ API, no flags data will '
                 'be available'
             )
+
     return _bugzilla[bug_id]
 
 

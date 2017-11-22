@@ -6,6 +6,15 @@ this_path = os.path.abspath(os.path.dirname(__file__))
 files_path = os.path.join(this_path, 'files')
 
 
+class DummyConnection(object):
+    def __init__(self, cache):
+        self.cache = cache
+
+    def getbug(self, bug_id, **kw):
+        print(self.cache)
+        return self.cache[str(bug_id)]
+
+
 class BZReaderForTest(BZReader):
 
     _cache_data = None
@@ -17,7 +26,7 @@ class BZReaderForTest(BZReader):
 
     def _get_connection(self):
         """This object has not to connect to bugzilla, work only with cache"""
-        return None
+        return DummyConnection(self._cache)
 
     def get_bug_data_in_bulk(self, bugs):
         bugs_data = {}
