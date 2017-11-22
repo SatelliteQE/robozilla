@@ -15,6 +15,7 @@ from robozilla.constants import (
     BUGZILLA_ENVIRON_SAT_VERSION,
     BUGZILLA_ENVIRON_USER_NAME,
     BUGZILLA_ENVIRON_USER_PASSWORD_NAME,
+    BZ_CLOSED_STATUSES,
     BZ_OPEN_STATUSES,
     REDMINE_URL
 )
@@ -217,6 +218,8 @@ def _check_skip_condition_for_one_bug(bug, consider_flags,
     # NEW, ASSIGNED, MODIFIED, POST
     if bug['status'] in BZ_OPEN_STATUSES:
         return True
+    elif bug.get('status_resolution', bug['status']) in BZ_CLOSED_STATUSES:
+        return False
     elif config.get('upstream'):
         return False
 
@@ -254,6 +257,7 @@ def _check_skip_conditions_for_bug_and_clones(bug, consider_flags=True,
     :return: boolean indicating if it must be skipped or not
 
     """
+
     config = config or {}
     if bug is None:
         return False
@@ -349,7 +353,8 @@ def _get_bugzilla_bug(bug_id, bz_credentials=None):
                 'id', 'status', 'whiteboard', 'flags', 'resolution',
                 'target_milestone'
             ],
-            follow_clones=True
+            follow_clones=True,
+            follow_duplicates=True  # only when resolution is 'DUPLICATE'
         )
         _bugzilla[bug_id] = reader.get_bug_data(bug_id)
         if not bz_credentials:
@@ -358,6 +363,7 @@ def _get_bugzilla_bug(bug_id, bz_credentials=None):
                 'Unauthenticated call made to BZ API, no flags data will '
                 'be available'
             )
+
     return _bugzilla[bug_id]
 
 
