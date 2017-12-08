@@ -2,6 +2,10 @@
 History
 =======
 
+0.2.2 (2017-12-08)
+__________________
+* Bugzilla status to "ON_DEV" has been added to open status.
+
 0.1.8 (2017-03-02)
 ------------------
 * implement subcommands scan and coverage
