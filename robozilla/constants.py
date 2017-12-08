@@ -42,7 +42,8 @@ BZ_OPEN_STATUSES = [
     'NEW',
     'ASSIGNED',
     'POST',
-    'MODIFIED'
+    'MODIFIED',
+    'ON_DEV'
 ]
 BZ_CLOSED_STATUSES = [
     'ON_QA',
