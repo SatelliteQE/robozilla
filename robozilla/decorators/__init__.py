@@ -1,4 +1,5 @@
 # coding: utf-8
+import inspect
 import logging
 import os
 import re
@@ -60,9 +61,13 @@ def _redmine_closed_issue_statuses():
     return _redmine['closed_statuses']
 
 
-def get_func_name(func):
+def get_func_name(func, class_name=None):
     """Given a func object return standardized name to use across project"""
-    return '{0}.{1}'.format(func.__module__, func.__name__)
+    names = [func.__module__]
+    if class_name:
+        names.append(class_name)
+    names.append(func.__name__)
+    return '.'.join(names)
 
 
 class BugFetchError(Exception):
@@ -422,6 +427,24 @@ class skip_if_bug_open(object):  # noqa pylint:disable=C0103,R0903
             run.
 
         """
+        # Define first from which class the decorator has been called
+        # we need this to make a naming deference between tests that are
+        # located at module level and those in diffrent TestCases
+        # we need to use inspect as the function has been wrapped and lost many
+        # of it's original attributes
+        self.caller_class_name = None
+        class_names = []
+        class_name = None
+        index = 1
+        current_frame = inspect.currentframe()
+        while class_name != '<module>' and index <= 3:
+            if class_name and class_name != 'decorator':
+                class_names.append(class_name)
+            class_name = inspect.getouterframes(current_frame)[index][3]
+            index += 1
+        class_names.reverse()
+        if class_names:
+            self.caller_class_name = class_names[0]
         self.bug_type = bug_type
         self.bug_id = bug_id
         self.sat_version_picker = sat_version_picker
@@ -497,7 +520,10 @@ class skip_if_bug_open(object):  # noqa pylint:disable=C0103,R0903
             conf = self.config_picker() if callable(self.config_picker) else {}
             if conf.get('wontfix_lookup') is True:
                 bz_namespace.decorated_functions.append(
-                    (get_func_name(func), str(self.bug_id))
+                    (
+                        get_func_name(func, class_name=self.caller_class_name),
+                        str(self.bug_id)
+                    )
                 )
 
 
