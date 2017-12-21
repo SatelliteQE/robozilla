@@ -218,23 +218,23 @@ def _check_skip_condition_for_one_bug(bug, consider_flags,
     # NEW, ASSIGNED, MODIFIED, POST
     if bug['status'] in BZ_OPEN_STATUSES:
         return True
-    elif bug.get('status_resolution', bug['status']) in BZ_CLOSED_STATUSES:
-        return False
+    # elif bug.get('status_resolution', bug['status']) in BZ_CLOSED_STATUSES:
+    #     return False
     elif config.get('upstream'):
         return False
 
-    def skip_upstream_conditions(flags):
+    def skip_upstream_conditions():
         """do not test bugs with whiteboard 'verified in upstream' in
         downstream until they are in 'CLOSED' state
          Verify all conditions are True, stopping evaluation when
          first condition is False
         """
-        yield bug['status'] != 'CLOSED'
-        whiteboard = bug['whiteboard']
+        yield bug['status'] not in BZ_CLOSED_STATUSES
+        whiteboard = bug.get('whiteboard', '')
         yield whiteboard
         yield 'verified in upstream' in whiteboard.lower()
 
-    return (all(skip_upstream_conditions(bug.get('flags', {}))) or
+    return (all(skip_upstream_conditions()) or
             (consider_flags and _skip_downstream_condition(
                 bug, sat_version_picker)))
 
