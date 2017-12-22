@@ -147,7 +147,7 @@ _to_target_milestone_version = partial(
 
 
 def _skip_downstream_condition(bug, sat_version_picker=None):
-    """Analyse bugzila flags returning False if host version is greater or
+    """Analyze bugzilla flags returning False if host version is greater or
     equal to min positive flag version, True otherwise.
     The `sat_version_picker` param should be a callable with no arguments
     which returns the sat version as string in format `x.y.z'
@@ -253,11 +253,48 @@ def _check_skip_conditions_for_bug_and_clones(bug, consider_flags=True,
     if bug is None:
         return False
     all_bugs = chain([bug], bug.get('other_clones', {}).values())
+    # If BZ was fixed in zstream of previous sat version it doesn't
+    # necessarily mean it was ported to future sat version immediately,
+    # thus we shouldn't rely on such closed BZ;
+    # filter out clones for previous versions if there's a clone for the same
+    # version as satellite
+    filtered_bugs = list(all_bugs)
+    if (
+            len(filtered_bugs) > 1
+            and sat_version_picker is not None
+            and sat_version_picker() is not None
+            and (not config or not config.get('upstream'))):
+
+        def get_bug_versions(bug):
+            """Form a set of satellite versions affected by BZ"""
+            flags = bug.get('flags', {})
+            positive_flags = [k for k, v in flags.items() if v == '+']
+            zstream_versions = list(filter(
+                lambda version: version is not None,
+                map(_to_zstream_version, positive_flags)
+            ))
+            downstream_versions = list(filter(
+                lambda version: version is not None,
+                map(_to_downstream_version, positive_flags)
+            ))
+            return set(zstream_versions+downstream_versions)
+
+        affected_clone_present = any(
+            float(sat_version_picker()) in get_bug_versions(bug)
+            for bug in filtered_bugs
+        )
+        if affected_clone_present:
+            # remove not actual bugs from list
+            filtered_bugs = [
+                bug for bug in filtered_bugs
+                if float(sat_version_picker()) in get_bug_versions(bug)
+            ]
+
     skip_results = (
         _check_skip_condition_for_one_bug(
             bug_or_clone, consider_flags, sat_version_picker, config
         )
-        for bug_or_clone in all_bugs
+        for bug_or_clone in filtered_bugs
     )
     all_open = all(skip_results)
     if all_open:
