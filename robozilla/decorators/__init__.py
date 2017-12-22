@@ -280,14 +280,15 @@ def _check_skip_conditions_for_bug_and_clones(bug, consider_flags=True,
             return set(zstream_versions+downstream_versions)
 
         affected_clone_present = any(
-            float(sat_version_picker()) in get_bug_versions(bug)
-            for bug in filtered_bugs
+            float(sat_version_picker()) in get_bug_versions(bug_or_clone)
+            for bug_or_clone in filtered_bugs
         )
         if affected_clone_present:
             # remove not actual bugs from list
             filtered_bugs = [
-                bug for bug in filtered_bugs
-                if float(sat_version_picker()) in get_bug_versions(bug)
+                bug_or_clone for bug_or_clone in filtered_bugs
+                if float(sat_version_picker()) in get_bug_versions(
+                    bug_or_clone)
             ]
 
     skip_results = (
