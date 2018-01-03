@@ -134,22 +134,34 @@ def rm_bug_is_open(bug_id, sat_version_picker=None,
     return True
 
 
-def _to_float_version(regular_exp, possible_version):
-    """extract version using regular_exp againt possible_version string.
-    Returns None if extraction is not possible"""
+def _extract_version(regular_exp, possible_version):
+    """Extract version using regular_exp against possible_version string.
+    Returns None if extraction is not possible
+    arguments defaults to None for backwards compatibility
+    :param regular_exp: A `re.compile` instance
+    :param possible_version: The string in the form sat-x.x.x or x.x.x
+    """
     result = regular_exp.search(possible_version)
     if result:
         return float(result.group('version'))
 
 
+# To get specifically the .z version as in sat-6.2.z
 _to_zstream_version = partial(
-    _to_float_version, re.compile(r'sat-(?P<version>\d\.\d)\.z'))
+    _extract_version, re.compile(r'sat-(?P<version>\d\.\d)\.z'))
 
+# To get specifically versions as in sat-6.2.3
 _to_downstream_version = partial(
-    _to_float_version, re.compile(r'sat-(?P<version>\d\.\d)\.\d'))
+    _extract_version, re.compile(r'sat-(?P<version>\d\.\d)\.\d'))
 
+# to get untagged as in 6.2.9
 _to_target_milestone_version = partial(
-    _to_float_version, re.compile(r'(?P<version>\d\.\d)\.\d'))
+    _extract_version, re.compile(r'(?P<version>\d\.\d)\.\d'))
+
+# match any version as in `sat-6.2.x` or `sat-6.2.0` or `6.2.9`
+# will all result in `float(6.2)`
+_to_float_version = partial(
+    _extract_version, re.compile(r'(?:sat-)*?(?P<version>\d\.\d)\.\w*'))
 
 
 def _skip_downstream_condition(bug, sat_version_picker=None):
@@ -261,54 +273,68 @@ def _check_skip_conditions_for_bug_and_clones(bug, consider_flags=True,
     config = config or {}
     if bug is None:
         return False
-    all_bugs = chain([bug], bug.get('other_clones', {}).values())
-    # If BZ was fixed in zstream of previous sat version it doesn't
-    # necessarily mean it was ported to future sat version immediately,
-    # thus we shouldn't rely on such closed BZ;
-    # filter out clones for previous versions if there's a clone for the same
-    # version as satellite
-    filtered_bugs = list(all_bugs)
-    if (
-            len(filtered_bugs) > 1
-            and sat_version_picker is not None
-            and sat_version_picker() is not None
-            and (not config or not config.get('upstream'))):
 
-        def get_bug_versions(bug):
-            """Form a set of satellite versions affected by BZ"""
-            flags = bug.get('flags', {})
-            positive_flags = [k for k, v in flags.items() if v == '+']
-            zstream_versions = list(filter(
-                lambda version: version is not None,
-                map(_to_zstream_version, positive_flags)
-            ))
-            downstream_versions = list(filter(
-                lambda version: version is not None,
-                map(_to_downstream_version, positive_flags)
-            ))
-            return set(zstream_versions+downstream_versions)
+    if bug.get('resolution') == 'DUPLICATE' and bug.get('duplicate_of') is not None:  # noqa
+        # if is a DUPLICATE, unconsider the BZ and look only for the DUP and its clones  # noqa
+        all_open = _check_skip_conditions_for_bug_and_clones(
+            bug.get('duplicate_of'),
+            consider_flags=consider_flags,
+            sat_version_picker=sat_version_picker,
+            config=config
+        )
+    else:
+        # If not DUPLICATE then look to all clones and chain results
+        all_bugs = chain([bug], bug.get('other_clones', {}).values())
+        # If BZ was fixed in zstream of previous sat version it doesn't
+        # necessarily mean it was ported to future sat version immediately,
+        # thus we shouldn't rely on such closed BZ;
+        # filter out clones for previous versions if there's a clone for the
+        # same version as satellite
+        filtered_bugs = list(all_bugs)
+        if (
+                len(filtered_bugs) > 1
+                and sat_version_picker is not None
+                and sat_version_picker() is not None
+                and (not config or not config.get('upstream'))):
 
-        affected_clone_present = any(
-            float(sat_version_picker()) in get_bug_versions(bug_or_clone)
+            def get_bug_versions(bug):
+                """Form a set of satellite versions affected by BZ"""
+                flags = bug.get('flags', {})
+                positive_flags = [k for k, v in flags.items() if v == '+']
+                zstream_versions = list(filter(
+                    lambda version: version is not None,
+                    map(_to_zstream_version, positive_flags)
+                ))
+                downstream_versions = list(filter(
+                    lambda version: version is not None,
+                    map(_to_downstream_version, positive_flags)
+                ))
+                return set(zstream_versions + downstream_versions)
+
+            affected_clone_present = any(
+                _to_float_version(sat_version_picker())
+                in get_bug_versions(bug_or_clone)
+                for bug_or_clone in filtered_bugs
+            )
+            if affected_clone_present:
+                # remove not actual bugs from list
+                filtered_bugs = [
+                    bug_or_clone for bug_or_clone in filtered_bugs
+                    if _to_float_version(sat_version_picker())
+                    in get_bug_versions(bug_or_clone)
+                ]
+
+        skip_results = (
+            _check_skip_condition_for_one_bug(
+                bug_or_clone, consider_flags, sat_version_picker, config
+            )
             for bug_or_clone in filtered_bugs
         )
-        if affected_clone_present:
-            # remove not actual bugs from list
-            filtered_bugs = [
-                bug_or_clone for bug_or_clone in filtered_bugs
-                if float(sat_version_picker()) in get_bug_versions(
-                    bug_or_clone)
-            ]
+        all_open = all(skip_results)
 
-    skip_results = (
-        _check_skip_condition_for_one_bug(
-            bug_or_clone, consider_flags, sat_version_picker, config
-        )
-        for bug_or_clone in filtered_bugs
-    )
-    all_open = all(skip_results)
     if all_open:
         LOGGER.debug('Bugzilla {0} is open'.format(bug.get('id')))
+
     return all_open
 
 

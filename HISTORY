@@ -2,6 +2,13 @@
 History
 =======
 
+0.2.5 (2018-01-03)
+------------------
+* Follow DUPLICATE status if BZ is CLOSED DUPLICATE 
+* Fix infinite loops when circular referenced BZ is decorated
+* Added more status_resolution to BZ_CLOSED_STATUSES
+* On decorators follow_duplicates will default to True (but will follow only for status DUPLICATE)
+
 0.2.4 (2017-12-22)
 ------------------
 * Ignore BZ clones for different versions of satellite if there's a clone for current one
@@ -13,6 +20,14 @@ History
 0.2.2 (2017-12-08)
 ------------------
 * Bugzilla status to "ON_DEV" has been added to open status.
+
+0.2.1 (2017-10-17)
+------------------
+* Added default pickers to get version and config from environment variables
+
+0.2.0 (2017-07-25)
+------------------
+* Added decorator for pytest parametrized tests
 
 0.1.8 (2017-03-02)
 ------------------
