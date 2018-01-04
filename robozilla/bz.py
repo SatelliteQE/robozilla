@@ -69,11 +69,15 @@ class BZReader(object):
 
         if self.follow_clones and CLONES_FIELD not in self.include_fields:
             self.include_fields.append(CLONES_FIELD)
-        if self.follow_duplicates and (
-                    DUPLICATES_FIELD not in self.include_fields):
-            self.include_fields.append(DUPLICATES_FIELD)
+        # DUPLICATES_FIELD is not included because it depends on `resolution`
         if self.follow_depends and DEPENDENT_FIELD not in self.include_fields:
             self.include_fields.append(DEPENDENT_FIELD)
+
+        # To hold the id that started the call
+        # also all already processed ids
+        # and avoid circular infinite loops
+        self.root_bug_id = None
+        self.processed_bugs = []
 
     def _get_query_include_fields(self):
         if self._always_use_all_fields:
@@ -102,11 +106,13 @@ class BZReader(object):
         query[CLONES_FIELD] = bug_ids
         return _filter_none(bz_conn.query(query))
 
-    def get_bug_data_in_bulk(self, bugs):
+    def get_bug_data_in_bulk(self, bugs, include_fields=None):
         """Get bug_data in bulk by given chunk in bugs
         bugs: a list of ids"""
         bz_conn = self._get_connection()
-        include_fields = self._get_query_include_fields()
+        include_fields = include_fields or self._get_query_include_fields()
+        # To follow duplicates in bulk mode `dupe_of` must be part of
+        # include_fields list
         result_bugs = list(_filter_none(
             bz_conn.getbugs(bugs, include_fields=include_fields)))
         chunk_data = {}
@@ -137,16 +143,37 @@ class BZReader(object):
 
         return chunk_data
 
-    def get_bug_data(self, bug_id):
+    def get_bug_data(self, bug_id, include_fields=None, use_cache=True):
         """Get data for a single bug_id"""
+        if not bug_id:
+            return
+
+        if self.root_bug_id is None:
+            self.root_bug_id = bug_id
+
+        self.processed_bugs.append(bug_id)
+
+        include_fields = include_fields or self.include_fields[:]
         bug_data = self._cache.get(str(bug_id))
-        if not bug_data:
+        if not bug_data or not use_cache:
             bz_conn = self._get_connection()
             try:
                 bug = bz_conn.getbug(
                     bug_id,
-                    include_fields=self.include_fields
+                    include_fields=include_fields
                 )
+
+                if self.follow_duplicates and getattr(bug, 'resolution') == 'DUPLICATE':  # noqa
+                    # in case of a DUPLICATE, call again taking the dupes
+                    # but only if self.follow_duplicates is True
+                    inc_fields = include_fields[:]  # avoid shadowing
+                    if DUPLICATES_FIELD not in inc_fields:
+                        inc_fields.append(DUPLICATES_FIELD)
+                    bug = bz_conn.getbug(
+                        bug_id,
+                        include_fields=inc_fields
+                    )
+
                 if bug is not None:
                     bug_clones_data = []
                     if self.follow_clones:
@@ -184,7 +211,12 @@ class BZReader(object):
             bugs_clones_data = []
 
         bug_data = {}
-        for field in self.include_fields:
+
+        include_fields = self.include_fields[:]
+        if self.follow_duplicates and getattr(bug, 'resolution') == 'DUPLICATE':  # noqa
+            include_fields.append(DUPLICATES_FIELD)
+
+        for field in include_fields:
             if field in bug.__dict__:
                 # field can exist with hasattr(bug, field), but not returned
                 # by getattr, and if we use getattr(bug, field, None)
@@ -229,27 +261,34 @@ class BZReader(object):
         if not base_data_only:
             # getting dupes and clones are expensive and makes the elapsed time
             # to be 20x slow so they are by default disabled
-            if (DUPLICATES_FIELD in self.include_fields and
-                    self.follow_duplicates):
-                if bug_data[DUPLICATES_FIELD]:
+            if self.follow_duplicates:
+                dupe_of = bug_data.get(DUPLICATES_FIELD)
+                if dupe_of and dupe_of not in self.processed_bugs:
                     bug_data['duplicate_of'] = self.get_bug_data(
-                        bug_data[DUPLICATES_FIELD])
+                        bug_data[DUPLICATES_FIELD],
+                        use_cache=False
+                    )
                 else:
                     bug_data['duplicate_of'] = None
 
             if (CLONES_FIELD in self.include_fields and
                     self.follow_clones):
-                if bug_data[CLONES_FIELD]:
-                    bug_data['clone_of'] = self.get_bug_data(
-                        bug_data[CLONES_FIELD])
+                cf_clone_of = bug_data.get(CLONES_FIELD)
+                if cf_clone_of and cf_clone_of not in self.processed_bugs:
+                    bug_data['clone_of'] = self.get_bug_data(cf_clone_of)
                 else:
                     bug_data['clone_of'] = None
 
             if (DEPENDENT_FIELD in self.include_fields and
                     self.follow_depends):
-                if bug_data[DEPENDENT_FIELD]:
+                depends_on = [
+                    dep_id for dep_id in
+                    bug_data.get(DEPENDENT_FIELD, [])
+                    if dep_id not in self.processed_bugs
+                ]
+                if depends_on:
                     bug_data['dependent_on'] = []
-                    for depend_on in bug_data[DEPENDENT_FIELD]:
+                    for depend_on in depends_on:
                         bug_data['dependent_on'].append(
                             self.get_bug_data(depend_on))
                 else:
