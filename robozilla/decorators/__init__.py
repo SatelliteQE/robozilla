@@ -15,7 +15,6 @@ from robozilla.constants import (
     BUGZILLA_ENVIRON_SAT_VERSION,
     BUGZILLA_ENVIRON_USER_NAME,
     BUGZILLA_ENVIRON_USER_PASSWORD_NAME,
-    BZ_CLOSED_STATUSES,
     BZ_OPEN_STATUSES,
     REDMINE_URL
 )
@@ -141,9 +140,13 @@ def _extract_version(regular_exp, possible_version):
     :param regular_exp: A `re.compile` instance
     :param possible_version: The string in the form sat-x.x.x or x.x.x
     """
-    result = regular_exp.search(possible_version)
-    if result:
-        return float(result.group('version'))
+    try:
+        # EAFP to get a float direct from `6.1` like strings before regexing
+        return float(possible_version.strip())
+    except ValueError:
+        result = regular_exp.search(possible_version)
+        if result:
+            return float(result.group('version'))
 
 
 # To get specifically the .z version as in sat-6.2.z
@@ -241,7 +244,7 @@ def _check_skip_condition_for_one_bug(bug, consider_flags,
          Verify all conditions are True, stopping evaluation when
          first condition is False
         """
-        yield bug['status'] not in BZ_CLOSED_STATUSES
+        yield bug['status'] != 'CLOSED'
         whiteboard = bug.get('whiteboard', '')
         yield whiteboard
         yield 'verified in upstream' in whiteboard.lower()
