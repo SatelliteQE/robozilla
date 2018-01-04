@@ -143,7 +143,7 @@ class BZReader(object):
 
         return chunk_data
 
-    def get_bug_data(self, bug_id, include_fields=None, use_cacke=True):
+    def get_bug_data(self, bug_id, include_fields=None, use_cache=True):
         """Get data for a single bug_id"""
         if not bug_id:
             return
@@ -155,7 +155,7 @@ class BZReader(object):
 
         include_fields = include_fields or self.include_fields[:]
         bug_data = self._cache.get(str(bug_id))
-        if not bug_data or not use_cacke:
+        if not bug_data or not use_cache:
             bz_conn = self._get_connection()
             try:
                 bug = bz_conn.getbug(
@@ -266,7 +266,7 @@ class BZReader(object):
                 if dupe_of and dupe_of not in self.processed_bugs:
                     bug_data['duplicate_of'] = self.get_bug_data(
                         bug_data[DUPLICATES_FIELD],
-                        use_cacke=False
+                        use_cache=False
                     )
                 else:
                     bug_data['duplicate_of'] = None
