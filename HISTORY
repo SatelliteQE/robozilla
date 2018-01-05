@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.6 (2018-01-04)
+------------------
+* HOTFIXES
+* Consider `6.x` (two digit) version on _extract_version as it is being used for tests
+* Revert change on skip_upstream_condition to look straightly to CLOSED status 
+
 0.2.5 (2018-01-03)
 ------------------
 * Follow DUPLICATE status if BZ is CLOSED DUPLICATE 
