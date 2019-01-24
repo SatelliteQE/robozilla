@@ -75,7 +75,7 @@ class QueryExpListTestCase(TestCase):
 
     def test_is_empty_and_contain_with_escape(self):
         # escape the list separator and the compare operator in value
-        exp_text = 'flagtypes.name[],flagtypes.name~sat-6\,2\~'
+        exp_text = r'flagtypes.name[],flagtypes.name~sat-6\,2\~'
         value = decode_exp_list(exp_text)
         # the value should looks like:
         # [
