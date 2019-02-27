@@ -86,10 +86,10 @@ def scan(scan_dir, filters, warn, all, duplicates, clones, depends, echo, user,
         reader_options['follow_depends'] = True
 
     if not user and BUGZILLA_ENVIRON_USER_NAME in os.environ:
-            user = os.environ[BUGZILLA_ENVIRON_USER_NAME]
+        user = os.environ[BUGZILLA_ENVIRON_USER_NAME]
 
     if not password and BUGZILLA_ENVIRON_USER_PASSWORD_NAME in os.environ:
-            password = os.environ[BUGZILLA_ENVIRON_USER_PASSWORD_NAME]
+        password = os.environ[BUGZILLA_ENVIRON_USER_PASSWORD_NAME]
 
     if (user and not password) or (not user and password):
         raise Exception('you must provide a user and password')
@@ -137,10 +137,10 @@ def coverage(exclude_components, include_flags, exclude_flags, start_date,
 
     reader_options = {}
     if not user and BUGZILLA_ENVIRON_USER_NAME in os.environ:
-            user = os.environ[BUGZILLA_ENVIRON_USER_NAME]
+        user = os.environ[BUGZILLA_ENVIRON_USER_NAME]
 
     if not password and BUGZILLA_ENVIRON_USER_PASSWORD_NAME in os.environ:
-            password = os.environ[BUGZILLA_ENVIRON_USER_PASSWORD_NAME]
+        password = os.environ[BUGZILLA_ENVIRON_USER_PASSWORD_NAME]
     if (user and not password) or (not user and password):
         raise Exception('you must provide a user and password')
     if user and password:

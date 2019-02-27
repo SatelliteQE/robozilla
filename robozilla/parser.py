@@ -21,7 +21,7 @@ class Parser(object):
                  bz_reader=None, environment=None, reader_options=None):
 
         if isinstance(files_provider, six.string_types):
-                files_provider = FilesProvider(files_provider)
+            files_provider = FilesProvider(files_provider)
 
         self.files_provider = files_provider
         self.filters = filters if filters is not None else [

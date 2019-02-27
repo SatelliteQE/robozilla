@@ -1,5 +1,2 @@
 
-Click>=6.0
-python-bugzilla>=1.2.2
-six>=1.10.0
 --editable .
