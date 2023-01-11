@@ -8,7 +8,6 @@ from itertools import chain
 
 import pytest
 import requests
-import unittest2
 
 from robozilla.bz import BZReader
 from robozilla.constants import (
@@ -560,7 +559,7 @@ class skip_if_bug_open(object):  # noqa pylint:disable=C0103,R0903
                     func.__module__,
                     self.bug_id
                 )
-                raise unittest2.SkipTest(
+                pytest.skip(
                     'Skipping test due to open Bugzilla bug #{0}.'
                     ''.format(self.bug_id)
                 )
@@ -571,7 +570,7 @@ class skip_if_bug_open(object):  # noqa pylint:disable=C0103,R0903
                     func.__module__,
                     self.bug_id
                 )
-                raise unittest2.SkipTest(
+                pytest.skip(
                     'Skipping test due to open Redmine bug #{0}.'
                     ''.format(self.bug_id)
                 )
