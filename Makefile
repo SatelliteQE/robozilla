@@ -87,5 +87,8 @@ dist: clean ## builds source and wheel package
 install: clean ## install the package to the active Python's site-packages
 	python setup.py install
 
+install-dev: ## install the package in development mode
+	pip install -e .
+
 bump: test
 	bumpversion patch --config-file=setup.cfg

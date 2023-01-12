@@ -45,32 +45,31 @@ EXP_TEMP_ESCAPE_STR = '-@@_$_escape_separator_$_@@@-'
 
 NEGATION_STR = '!'
 
-COMPARE_STRINGS = {
-    '=': 'equals',
-    '!=': 'notequals',
-    '~[==]': 'anyexactis',
-    '~': 'substring',
-    '~~': 'casesubstring',
-    '!~': 'notsubstring',
+COMPARE_STRINGS = [
+    ('=', 'equals'),
+    ('!=', 'notequals'),
+    ('~[==]', 'anyexactis'),
+    ('~~', 'casesubstring'),
+    ('!~', 'notsubstring'),
+    ('~', 'substring'),
 
-    '~[~]': 'anywordssubstr',
-    '=[~]': 'allwordssubstr',
-    '![~]': 'nowordssubstr',
+    ('~[~]', 'anywordssubstr'),
+    ('=[~]', 'allwordssubstr'),
+    ('![~]', 'nowordssubstr'),
 
-    '<': 'lessthan',
-    '<=': 'lessthaneq',
-    '=<': 'lessthaneq',
-    '>': 'greaterthan',
-    '>=': 'greaterthaneq',
-    '=>': 'greaterthaneq',
+    ('<', 'lessthan'),
+    ('<=', 'lessthaneq'),
+    ('=<', 'lessthaneq'),
+    ('>', 'greaterthan'),
+    ('>=', 'greaterthaneq'),
+    ('=>', 'greaterthaneq'),
 
-    '~[=]': 'anywords',
-    '=[=]': 'allwords',
-    '![=]': 'nowords',
-
-    '[]': 'isempty',
-    '![]': 'isnotempty',
-    }
+    ('~[=]', 'anywords'),
+    ('=[=]', 'allwords'),
+    ('![=]', 'nowords'),
+    ('![]', 'isnotempty'),
+    ('[]', 'isempty'),
+]
 
 
 class NoCompareStringNotFoundError(Exception):
@@ -107,7 +106,7 @@ def decode_exp_unit(text, raise_not_found=True):
     if not text:
         return value
     cmp_str_found = False
-    for cmp_str, cmp_value in COMPARE_STRINGS.items():
+    for cmp_str, cmp_value in COMPARE_STRINGS:
         text = _escape_string_to_temp(cmp_str, text)
         if cmp_str in text:
             cmp_str_found = True

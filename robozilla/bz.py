@@ -185,10 +185,6 @@ class BZReader(object):
                     bug_data = self.set_bug_data_fields(
                         bug, bugs_clones_data=bug_clones_data)
 
-            except ErrorString as error:
-                logger.warning(
-                    'Could not interpret bug. Error: {0}'.format(error)
-                )
             except Fault as error:
                 logger.warning(
                     'Could not fetch bug. Error: {0}'.format(error.faultString)

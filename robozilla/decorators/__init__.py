@@ -192,7 +192,7 @@ def _skip_downstream_condition(bug, sat_version_picker=None):
     target_milestone_version = bug['target_milestone']
 
     has_down_and_zstream = downstream_versions and zstream_versions
-    if has_down_and_zstream and target_milestone_version is 'Unspecified':
+    if has_down_and_zstream and target_milestone_version == 'Unspecified':
         LOGGER.warning('Bugzilla with both downstream and zstream flags and '
                        'unspecified target_milestone: {}'.format(bug))
         return True
